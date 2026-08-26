@@ -3,7 +3,7 @@ import { Calendar } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
 
 function submitRsvp(payload) {
-  // Placeholder "network call" — swap this out once a real endpoint exists.
+  // a real endpoint 
   return new Promise((resolve) => setTimeout(() => resolve(payload), 500));
 }
 

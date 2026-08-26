@@ -1,6 +1,5 @@
 import React from "react";
 import Reveal from "./shared/Reveal.jsx";
-import PhotoFrame from "./shared/PhotoFrame.jsx";
 
 export default function OurStory() {
   return (
@@ -18,7 +17,11 @@ export default function OurStory() {
         </p>
       </Reveal>
       <div className="story-photo">
-        <PhotoFrame label="Photo of Ruby and Israel" height="100%" />
+        <img
+          src="/images/Our_story.jpg"
+          alt="Ruby and Israel"
+          className="story-img"
+        />
       </div>
     </section>
   );

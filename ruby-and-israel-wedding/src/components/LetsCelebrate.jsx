@@ -18,13 +18,13 @@ export default function LetsCelebrate() {
           <div className="join-item">
             <MapPin className="ic" size={26} strokeWidth={1.2} />
             <span className="lbl">Venue</span>
-            <span className="val">Details to follow</span>
+            <span className="val">Citam Karen</span>
           </div>
           <span className="join-div" />
           <div className="join-item">
             <Clock className="ic" size={26} strokeWidth={1.2} />
             <span className="lbl">Time</span>
-            <span className="val">11:00 AM</span>
+            <span className="val">12:00 PM</span>
           </div>
         </div>
         <div className="join-actions">

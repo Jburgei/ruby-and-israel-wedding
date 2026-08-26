@@ -7,9 +7,9 @@ export default function Hero() {
       className="hero"
       style={{
         backgroundImage:
-          "linear-gradient(155deg, rgba(16,27,50,.75), rgba(42,63,104,.55)), url(/images/Hero_1.PNG)",
+          "linear-gradient(155deg, rgba(16,27,50,.6), rgba(42,63,104,.4)), url(/images/Hero_1.PNG)",
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition: "50% 25%",
       }}
     >
       <div className="hero-rings" />
