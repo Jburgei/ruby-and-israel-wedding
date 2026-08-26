@@ -3,7 +3,15 @@ import { ChevronDown } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="hero">
+    <section
+      className="hero"
+      style={{
+        backgroundImage:
+          "linear-gradient(155deg, rgba(16,27,50,.75), rgba(42,63,104,.55)), url(/images/Hero_1.PNG)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="hero-rings" />
       <div className="hero-top">
         <div className="hero-invite">
