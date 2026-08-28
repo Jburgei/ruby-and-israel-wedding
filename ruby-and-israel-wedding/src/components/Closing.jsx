@@ -1,5 +1,6 @@
 import React from "react";
 import Reveal from "./shared/Reveal.jsx";
+import Particles from "./shared/Particles.jsx"
 
 // Swap this for whichever verse the couple wants.
 const VERSE_TEXT =
@@ -9,6 +10,7 @@ const VERSE_REF = "1 Corinthians 13:4, 7";
 export default function Closing() {
   return (
     <section className="closing">
+        <Particles />
       <Reveal>
         <p className="closing-verse">&ldquo;{VERSE_TEXT}&rdquo;</p>
         <p className="closing-ref">{VERSE_REF}</p>

@@ -36,11 +36,28 @@ body,
   padding: 0;
 }
 .wed-app .eyebrow {
+  position: relative;
+  display: inline-block;
   font-family: var(--body);
   font-size: 12px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   font-weight: 500;
+  padding-bottom: 12px;
+}
+.wed-app .eyebrow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: var(--coral);
+  transform: translateX(-50%);
+  transition: width 0.8s ease 0.15s;
+}
+.wed-app .reveal.in .eyebrow::after {
+  width: 40px;
 }
 .wed-app .reveal {
   opacity: 0;
@@ -129,6 +146,7 @@ body,
   justify-content: space-between;
   padding: 40px 6vw 56px;
   background: radial-gradient(120% 90% at 82% 8%, rgba(230, 199, 120, 0.18), transparent 55%),
+    radial-gradient(90% 70% at 12% 92%, rgba(238, 143, 110, 0.16), transparent 60%),
     linear-gradient(155deg, #101b32 0%, #1c2c4d 42%, #2a3f68 78%, #33507f 100%);
   color: var(--cream-lt);
   overflow: hidden;
@@ -140,7 +158,7 @@ body,
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  border: 1px solid rgba(230, 199, 120, 0.35);
+  border: 1px solid rgba(238, 168, 130, 0.35);
 }
 .wed-app .hero-rings::before {
   content: "";
@@ -162,6 +180,8 @@ body,
   align-items: flex-start;
   gap: 24px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 .wed-app .hero-invite {
   max-width: 280px;
@@ -198,6 +218,8 @@ body,
   align-items: flex-end;
   gap: 24px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 .wed-app .hero-date {
   font-family: var(--body);
@@ -230,7 +252,7 @@ body,
 }
 
 .wed-app .std {
-  background: var(--cream);
+  background: linear-gradient(160deg, var(--blush-lt) 0%, var(--cream) 55%, var(--cream) 100%);
   padding: 96px 6vw;
   text-align: center;
 }
@@ -257,67 +279,104 @@ body,
 }
 
 .wed-app .story {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-@media (min-width: 860px) {
-  .wed-app .story {
-    grid-template-columns: 1fr 1fr;
-    min-height: 560px;
-  }
-}
-.wed-app .story-text {
   position: relative;
-  overflow: hidden;
-  background: var(--navy);
-  color: var(--cream-lt);
-  padding: 72px 8%;
+  min-height: 90vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 22px;
+  align-items: center;
+  overflow: hidden;
+}
+.wed-app .story-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  z-index: 0;
+}
+.wed-app .story-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(22, 35, 63, 0.94) 0%,
+    rgba(22, 35, 63, 0.8) 40%,
+    rgba(22, 35, 63, 0.35) 72%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+.wed-app .story-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, var(--white));
+  z-index: 2;
+  pointer-events: none;
+}
+.wed-app .story-card {
+  position: relative;
+  z-index: 2;
+  max-width: 480px;
+  margin: 0 6vw;
+  padding: 0;
 }
 .wed-app .story-watermark {
   position: absolute;
-  top: -8%;
-  left: -4%;
+  top: -22%;
+  left: -12%;
   font-family: var(--display);
   font-style: italic;
-  font-size: clamp(220px, 34vw, 420px);
+  font-size: clamp(160px, 26vw, 280px);
   line-height: 1;
-  color: var(--gold);
-  opacity: 0.1;
+  color: var(--blush);
+  opacity: 0.22;
   pointer-events: none;
   user-select: none;
   z-index: 0;
 }
-.wed-app .story-content {
+.wed-app .story-card-content {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
 }
-.wed-app .story-text .eyebrow {
-  color: var(--gold-lt);
+.wed-app .story-card-content .eyebrow {
+  color: var(--blush);
+  position: relative;
+  padding-bottom: 14px;
 }
-.wed-app .story-text p {
+.wed-app .story-card-content .eyebrow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  height: 1.5px;
+  background: var(--blush);
+}
+.wed-app .story-body {
   font-family: var(--display);
+  font-style: italic;
   font-size: 19px;
-  line-height: 1.75;
-  color: rgba(250, 244, 230, 0.92);
-  max-width: 480px;
+  line-height: 1.8;
+  color: rgba(250, 244, 230, 0.95);
 }
-.wed-app .story-photo {
-  min-height: 320px;
-}
-
-.wed-app .story-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
+@media (max-width: 700px) {
+  .wed-app .story-card {
+    margin: 0 6vw;
+  }
+  .wed-app .story-scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(22, 35, 63, 0.55) 0%,
+      rgba(22, 35, 63, 0.85) 55%,
+      rgba(22, 35, 63, 0.94) 100%
+    );
+  }
 }
 
 .wed-app .join {
@@ -388,7 +447,9 @@ body,
   gap: 16px;
 }
 .wed-app .btn-gold {
-  background: var(--gold);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--gold) 0%, var(--coral) 100%);
   color: var(--navy);
   border: none;
   padding: 14px 38px;
@@ -398,11 +459,24 @@ body,
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease;
+}
+.wed-app .btn-gold::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
 }
 .wed-app .btn-gold:hover {
-  background: var(--gold-lt);
   transform: translateY(-2px);
+}
+.wed-app .btn-gold:hover::after {
+  left: 130%;
 }
 .wed-app .btn-outline {
   background: transparent;
@@ -426,7 +500,7 @@ body,
 }
 
 .wed-app .rsvp {
-  background: var(--cream);
+  background: linear-gradient(160deg, var(--cream) 0%, var(--blush-lt) 100%);
   padding: 100px 6vw;
   text-align: center;
 }
@@ -453,6 +527,7 @@ body,
   max-width: 440px;
   margin: 0 auto;
   border-radius: 14px;
+  border-top: 3px solid var(--coral);
   padding: 40px 32px;
   text-align: left;
   box-shadow: 0 20px 50px -30px rgba(21, 35, 64, 0.4);
@@ -507,9 +582,9 @@ body,
   transition: all 0.2s ease;
 }
 .wed-app .attend-btn.active-yes {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: var(--navy);
+  background: var(--coral);
+  border-color: var(--coral);
+  color: var(--white);
   font-weight: 500;
 }
 .wed-app .attend-btn.active-no {
@@ -521,7 +596,7 @@ body,
 .wed-app .submit-btn {
   width: 100%;
   margin-top: 8px;
-  background: var(--maroon);
+  background: var(--blush-dark);
   color: var(--cream-lt);
   border: none;
   padding: 14px 0;
@@ -534,7 +609,7 @@ body,
   transition: background 0.2s ease;
 }
 .wed-app .submit-btn:hover {
-  background: #a3324f;
+  background: var(--maroon);
 }
 .wed-app .submit-btn:disabled {
   opacity: 0.6;
@@ -657,6 +732,7 @@ body,
   gap: 28px;
 }
 .wed-app .nav-links a {
+  position: relative;
   font-family: var(--body);
   font-size: 12px;
   letter-spacing: 0.1em;
@@ -664,9 +740,25 @@ body,
   color: var(--navy-2);
   text-decoration: none;
   transition: color 0.2s ease;
+  padding-bottom: 4px;
+}
+.wed-app .nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1.5px;
+  background: var(--coral);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 .wed-app .nav-links a:hover {
-  color: var(--gold);
+  color: var(--coral);
+}
+.wed-app .nav-links a:hover::after {
+  transform: scaleX(1);
 }
 .wed-app .nav-links-desktop {
   display: none;
@@ -745,7 +837,7 @@ body,
 }
 
 .wed-app .gift {
-  background: var(--white);
+  background: linear-gradient(180deg, var(--white) 0%, var(--blush-lt) 100%);
   padding: 90px 6vw;
   text-align: center;
 }
@@ -786,7 +878,7 @@ body,
 .wed-app .gift-contact-name {
   font-family: var(--display);
   font-size: 17px;
-  color: var(--gold);
+  color: var(--coral);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -830,7 +922,7 @@ body,
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
-  height: min(100vh, 480px);
+  aspect-ratio: 3 / 4;
 }
 .wed-app .gallery-stack {
   position: relative;
@@ -925,7 +1017,7 @@ body,
   transition: background 0.2s ease;
 }
 .wed-app .gallery-dot.active {
-  background: var(--gold);
+  background: var(--coral);
 }
 .wed-app .gallery-caption {
   margin-top: 20px;
@@ -954,6 +1046,15 @@ body,
   font-size: clamp(28px, 5vw, 40px);
   color: var(--coral);
   line-height: 1;
+  animation: countdownGlow 3s ease-in-out infinite;
+}
+@keyframes countdownGlow {
+  0%, 100% {
+    text-shadow: 0 0 0 rgba(238, 143, 110, 0);
+  }
+  50% {
+    text-shadow: 0 0 14px rgba(238, 143, 110, 0.55);
+  }
 }
 .wed-app .countdown-label {
   font-size: 10px;
@@ -962,9 +1063,16 @@ body,
   color: var(--navy-2);
 }
 .wed-app .closing {
-  background: var(--navy);
+  position: relative;
+  background: radial-gradient(80% 60% at 50% 100%, rgba(238, 143, 110, 0.14), transparent 65%),
+    var(--navy);
   padding: 100px 8vw;
   text-align: center;
+  overflow: hidden;
+}
+.wed-app .closing > .reveal {
+  position: relative;
+  z-index: 1;
 }
 .wed-app .closing-verse {
   font-family: var(--display);
@@ -980,5 +1088,42 @@ body,
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold-lt);
+  color: var(--blush);
+}
+.wed-app .particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.wed-app .particle {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  opacity: 0;
+  animation-name: floatUp;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes floatUp {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(var(--drift), -50vh);
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translate(calc(var(--drift) * 1.6), -105vh);
+    opacity: 0;
+  }
 }

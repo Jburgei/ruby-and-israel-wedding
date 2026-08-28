@@ -7,9 +7,12 @@ const SLIDES = [
   { src: "/images/Our_story.jpg", alt: "Ruby and Israel" },
   { src: "/images/Gallery_3.jpg", alt: "Ruby and Israel" },
   { src: "/images/Gallery_4.jpg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_5.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_6.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_7.jpeg", alt: "Ruby and Israel" },
 ];
 
-const ROTATIONS = [-3, 2.5, -2, 3.5];
+const ROTATIONS = [-3, 2.5, -2, 3.5, -2.8, 3, -3.4];
 
 export default function Gallery() {
   const [index, setIndex] = useState(0);
@@ -48,7 +51,7 @@ export default function Gallery() {
         <div className="gallery-stack">
           {SLIDES.map((slide, i) => {
             const order = i - index;
-            if (order < 0) return null; // already passed, not re-shown (non-circular)
+            if (order < 0) return null;
             const isFront = order === 0;
             const baseRotate = ROTATIONS[i % ROTATIONS.length];
 
