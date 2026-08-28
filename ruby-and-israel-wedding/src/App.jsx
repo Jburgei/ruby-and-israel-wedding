@@ -1,18 +1,23 @@
-import React from "react";
-import Hero from "./components/Hero.jsx";
-import SaveTheDate from "./components/SaveTheDate.jsx";
-import OurStory from "./components/OurStory.jsx";
-import LetsCelebrate from "./components/LetsCelebrate.jsx";
-import RSVP from "./components/RSVP.jsx";
+import React, { useState } from 'react';
+import EnvelopeIntro from './components/EnvelopeIntro';
+import Hero from './components/Hero';
+import SaveTheDate from './components/SaveTheDate';
+import OurStory from './components/OurStory';
+import LetsCelebrate from './components/LetsCelebrate';
+import RSVP from './components/RSVP';
+
 
 export default function App() {
+  const [introDone, setIntroDone] = useState(false);
+
   return (
     <div className="wed-app">
-      <Hero />
-      <SaveTheDate />
-      <OurStory />
-      <LetsCelebrate />
-      <RSVP />
+      {!introDone && <EnvelopeIntro onDone={() => setIntroDone(true)} />}
+        <Hero />
+        <SaveTheDate />
+        <OurStory />
+        <LetsCelebrate />
+        <RSVP />
     </div>
   );
 }
