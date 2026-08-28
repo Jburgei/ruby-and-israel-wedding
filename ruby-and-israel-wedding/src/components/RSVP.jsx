@@ -42,7 +42,7 @@ export default function RSVP() {
   );
 
   return (
-    <section className="rsvp">
+    <section className="rsvp" id="rsvp">
       <Reveal>
         <p className="eyebrow">Your presence matters</p>
         <h2>Kindly RSVP</h2>

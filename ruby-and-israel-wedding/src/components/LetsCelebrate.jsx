@@ -4,7 +4,7 @@ import Reveal from "./shared/Reveal.jsx";
 
 export default function LetsCelebrate() {
   return (
-    <section className="join">
+   <section className="join" id="details">
       <Reveal>
         <p className="eyebrow">Join us</p>
         <h2>Let&rsquo;s celebrate</h2>
@@ -31,9 +31,7 @@ export default function LetsCelebrate() {
           <button className="btn-gold" type="button">
             View full invite
           </button>
-          <button className="btn-outline" type="button">
-            <MapPin size={14} /> Get directions
-          </button>
+
         </div>
       </Reveal>
     </section>

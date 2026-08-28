@@ -7,16 +7,21 @@ body,
   width: 100%;
 }
 .wed-app {
-  --navy: #152340;
+  --navy: #16233f;
   --navy-2: #22355c;
-  --gold: #c69a3d;
-  --gold-lt: #e6c778;
-  --maroon: #8c2846;
-  --dusty: #7e93ac;
+  --gold: #e3b23e;
+  --gold-lt: #ecc975;
+  --maroon: #5e1b30;
+  --dusty: #7e93b0;
+  --sky: #b7d2ea;
+  --coral: #ee8f6e;
   --cream: #f2e2c2;
   --cream-lt: #faf4e6;
   --ink: #2c2a24;
   --white: #fffdf8;
+  --blush: #e8a6b8;
+  --blush-dark: #b06f83;
+  --blush-lt: #f6e3e8;
   --display: "Cormorant Garamond", serif;
   --body: "Jost", sans-serif;
   font-family: var(--body);
@@ -262,12 +267,35 @@ body,
   }
 }
 .wed-app .story-text {
+  position: relative;
+  overflow: hidden;
   background: var(--navy);
   color: var(--cream-lt);
   padding: 72px 8%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 22px;
+}
+.wed-app .story-watermark {
+  position: absolute;
+  top: -8%;
+  left: -4%;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(220px, 34vw, 420px);
+  line-height: 1;
+  color: var(--gold);
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.wed-app .story-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
   gap: 22px;
 }
 .wed-app .story-text .eyebrow {
@@ -529,4 +557,428 @@ body,
 .wed-app .thanks p {
   font-size: 13px;
   color: var(--navy-2);
+}
+
+.wed-app .intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: circle(150% at 50% 50%);
+  transition: clip-path 2.6s cubic-bezier(0.35, 0, 0.25, 1);
+}
+.wed-app .intro-overlay.opening {
+  clip-path: circle(0% at 50% 50%);
+}
+.wed-app .intro-photo {
+  position: absolute;
+  inset: -20px;
+  background-image: url(/images/Hero_1.PNG);
+  background-size: cover;
+  background-position: 50% 25%;
+  filter: blur(22px);
+  transform: scale(1.15);
+  transition: filter 2.6s ease-in-out, transform 2.6s ease-in-out;
+}
+.wed-app .intro-overlay.opening .intro-photo {
+  filter: blur(0px);
+  transform: scale(1);
+}
+.wed-app .intro-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(155deg, rgba(16, 27, 50, 0.72), rgba(42, 63, 104, 0.5));
+}
+.wed-app .intro-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transition: opacity 1.6s ease;
+}
+.wed-app .intro-overlay.opening .intro-content {
+  opacity: 0;
+}
+.wed-app .intro-monogram {
+  font-family: var(--display);
+  font-size: clamp(48px, 10vw, 88px);
+  color: var(--cream-lt);
+  letter-spacing: 0.02em;
+}
+.wed-app .intro-date {
+  font-family: var(--body);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+}
+.wed-app .intro-hint {
+  margin-top: 14px;
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  opacity: 0.8;
+  animation: bob 2.4s ease-in-out infinite;
+}
+.wed-app .nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--cream-lt);
+  border-bottom: 1px solid var(--cream);
+}
+.wed-app .nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 6vw;
+}
+.wed-app .nav-brand {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 600;
+}
+.wed-app .nav-links {
+  display: flex;
+  gap: 28px;
+}
+.wed-app .nav-links a {
+  font-family: var(--body);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--navy-2);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.wed-app .nav-links a:hover {
+  color: var(--gold);
+}
+.wed-app .nav-links-desktop {
+  display: none;
+}
+.wed-app .nav-toggle {
+  background: none;
+  border: none;
+  color: var(--navy);
+  cursor: pointer;
+  padding: 4px;
+}
+.wed-app .nav-links-mobile {
+  flex-direction: column;
+  gap: 0;
+  padding: 0 6vw 16px;
+}
+.wed-app .nav-links-mobile a {
+  padding: 12px 0;
+  border-top: 1px solid var(--cream);
+}
+@media (min-width: 860px) {
+  .wed-app .nav-links-desktop {
+    display: flex;
+  }
+  .wed-app .nav-toggle {
+    display: none;
+  }
+}
+
+.wed-app .getting-there {
+  background: var(--cream);
+  padding: 90px 6vw;
+  text-align: center;
+}
+.wed-app .getting-there .eyebrow {
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.wed-app .getting-there h2 {
+  font-family: var(--display);
+  font-size: clamp(30px, 5vw, 44px);
+  color: var(--navy);
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+.wed-app .venue-card {
+  background: var(--white);
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: 14px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 20px 50px -30px rgba(21, 35, 64, 0.4);
+}
+.wed-app .venue-card .ic {
+  color: var(--gold);
+}
+.wed-app .venue-name {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--navy);
+}
+.wed-app .venue-address {
+  font-size: 13px;
+  color: var(--navy-2);
+}
+.wed-app .venue-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wed-app .gift {
+  background: var(--white);
+  padding: 90px 6vw;
+  text-align: center;
+}
+.wed-app .gift .eyebrow {
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.wed-app .gift h2 {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 40px);
+  color: var(--navy);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+.wed-app .gift-sub {
+  font-size: 14px;
+  color: var(--navy-2);
+  max-width: 460px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+.wed-app .gift-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+.wed-app .gift-contact {
+  background: var(--cream-lt);
+  border-radius: 12px;
+  padding: 26px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 220px;
+}
+.wed-app .gift-contact-name {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.wed-app .gift-contact-phone {
+  font-size: 14px;
+  color: var(--navy);
+  font-weight: 500;
+}
+.wed-app .gift-contact-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.wed-app .gift-whatsapp {
+  border-color: #25d366;
+  color: #1f9c50;
+}
+.wed-app .gift-whatsapp:hover {
+  background: #25d366;
+  color: var(--white);
+}
+
+.wed-app .gallery {
+  background: var(--navy);
+  padding: 90px 6vw;
+  text-align: center;
+  color: var(--cream-lt);
+}
+.wed-app .gallery .eyebrow {
+  color: var(--gold-lt);
+  margin-bottom: 16px;
+}
+.wed-app .gallery h2 {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+.wed-app .gallery-frame {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  height: min(100vh, 480px);
+}
+.wed-app .gallery-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.wed-app .gallery-polaroid {
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  padding: 16px 16px 56px;
+  box-shadow: 0 22px 46px -18px rgba(0, 0, 0, 0.55);
+  will-change: transform, opacity;
+}
+.wed-app .gallery-photo-well {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--navy-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.wed-app .gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.wed-app .gallery-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--gold);
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.wed-app .gallery-nav {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  background: rgba(21, 35, 64, 0.6);
+  border: 1px solid rgba(230, 199, 120, 0.4);
+  color: var(--cream-lt);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 20;
+}
+.wed-app .gallery-nav:hover {
+  background: rgba(21, 35, 64, 0.9);
+}
+.wed-app .gallery-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.wed-app .gallery-nav:disabled:hover {
+  background: rgba(21, 35, 64, 0.6);
+}
+.wed-app .gallery-prev {
+  left: -8px;
+}
+.wed-app .gallery-next {
+  right: -8px;
+}
+.wed-app .gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.wed-app .gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+}
+.wed-app .gallery-dot.active {
+  background: var(--gold);
+}
+.wed-app .gallery-caption {
+  margin-top: 20px;
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+}
+.wed-app .countdown {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.wed-app .countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+}
+.wed-app .countdown-num {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 40px);
+  color: var(--coral);
+  line-height: 1;
+}
+.wed-app .countdown-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--navy-2);
+}
+.wed-app .closing {
+  background: var(--navy);
+  padding: 100px 8vw;
+  text-align: center;
+}
+.wed-app .closing-verse {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(18px, 2.6vw, 24px);
+  line-height: 1.7;
+  color: var(--cream-lt);
+  max-width: 640px;
+  margin: 0 auto 18px;
+}
+.wed-app .closing-ref {
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
 }
