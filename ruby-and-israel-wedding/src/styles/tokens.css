@@ -172,6 +172,14 @@ body,
   border-radius: 50%;
   border: 1px solid rgba(238, 168, 130, 0.35);
 }
+@media (max-width: 480px) {
+  .wed-app .hero-rings {
+    top: -50px;
+    right: -50px;
+    width: 190px;
+    height: 190px;
+  }
+}
 .wed-app .hero-rings::before {
   content: "";
   position: absolute;
@@ -269,6 +277,11 @@ body,
   padding: 96px 6vw;
   text-align: center;
 }
+@media (max-width: 700px) {
+  .wed-app .std {
+    padding: 68px 6vw;
+  }
+}
 .wed-app .std .eyebrow {
   color: var(--maroon);
   margin-bottom: 18px;
@@ -360,6 +373,12 @@ body,
   user-select: none;
   z-index: 0;
 }
+@media (max-width: 480px) {
+  .wed-app .story-watermark {
+    font-size: 180px;
+    opacity: 0.16;
+  }
+}
 .wed-app .story-card-content {
   position: relative;
   z-index: 1;
@@ -408,6 +427,11 @@ body,
   border-top: 1px solid rgba(230, 178, 62, 0.25);
   padding: 100px 6vw;
   text-align: center;
+}
+@media (max-width: 700px) {
+  .wed-app .join {
+    padding: 68px 6vw;
+  }
 }
 .wed-app .join .eyebrow {
   color: var(--gold);
@@ -531,6 +555,14 @@ body,
   padding: 100px 6vw;
   text-align: center;
 }
+@media (max-width: 700px) {
+  .wed-app .rsvp {
+    padding: 68px 6vw;
+  }
+  .wed-app .rsvp-card {
+    padding: 30px 24px;
+  }
+}
 .wed-app .rsvp .eyebrow {
   color: var(--maroon);
   margin-bottom: 14px;
@@ -553,11 +585,10 @@ body,
   background: var(--white);
   max-width: 440px;
   margin: 0 auto;
-  border-radius: 14px;
-  border-top: 3px solid var(--coral);
+  border-radius: 4px;
+  border: 1px solid rgba(230, 178, 62, 0.45);
   padding: 40px 32px;
   text-align: left;
-  box-shadow: 0 20px 50px -30px rgba(21, 35, 64, 0.4);
 }
 .wed-app .field {
   margin-bottom: 20px;
@@ -576,11 +607,16 @@ body,
   border-radius: 8px;
   padding: 12px 14px;
   font-family: var(--body);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink);
   background: var(--cream-lt);
   outline: none;
   transition: border-color 0.2s ease;
+}
+@media (min-width: 700px) {
+  .wed-app .field input {
+    font-size: 14px;
+  }
 }
 .wed-app .field input:focus {
   border-color: var(--gold);
@@ -597,7 +633,7 @@ body,
 }
 .wed-app .attend-btn {
   flex: 1;
-  padding: 11px 0;
+  padding: 14px 0;
   border-radius: 8px;
   border: 1px solid #e4d9be;
   background: var(--cream-lt);
@@ -607,6 +643,11 @@ body,
   cursor: pointer;
   color: var(--navy-2);
   transition: all 0.2s ease;
+}
+@media (min-width: 700px) {
+  .wed-app .attend-btn {
+    padding: 11px 0;
+  }
 }
 .wed-app .attend-btn.active-yes {
   background: var(--coral);
@@ -745,7 +786,12 @@ body,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 6vw;
+  padding: 14px 5vw;
+}
+@media (max-width: 380px) {
+  .wed-app .nav-brand {
+    font-size: 17px;
+  }
 }
 .wed-app .nav-brand {
   font-family: var(--display);
@@ -795,7 +841,8 @@ body,
   border: none;
   color: var(--navy);
   cursor: pointer;
-  padding: 4px;
+  padding: 10px;
+  margin: -10px;
 }
 .wed-app .nav-links-mobile {
   flex-direction: column;
@@ -821,6 +868,11 @@ body,
   padding: 90px 6vw;
   text-align: center;
   color: var(--cream-lt);
+}
+@media (max-width: 700px) {
+  .wed-app .gallery {
+    padding: 64px 6vw;
+  }
 }
 .wed-app .gallery::after {
   content: "";
@@ -926,6 +978,14 @@ body,
 .wed-app .gallery-next {
   right: -8px;
 }
+@media (max-width: 480px) {
+  .wed-app .gallery-prev {
+    left: 4px;
+  }
+  .wed-app .gallery-next {
+    right: 4px;
+  }
+}
 .wed-app .gallery-dots {
   display: flex;
   justify-content: center;
@@ -959,6 +1019,14 @@ body,
   gap: 28px;
   margin-top: 32px;
   flex-wrap: wrap;
+}
+@media (max-width: 400px) {
+  .wed-app .countdown {
+    gap: 16px;
+  }
+  .wed-app .countdown-unit {
+    min-width: 50px;
+  }
 }
 .wed-app .countdown-unit {
   display: flex;
@@ -995,6 +1063,11 @@ body,
   padding: 100px 8vw;
   text-align: center;
   overflow: hidden;
+}
+@media (max-width: 700px) {
+  .wed-app .closing {
+    padding: 72px 8vw;
+  }
 }
 .wed-app .closing::before {
   content: "";
@@ -1165,11 +1238,9 @@ body,
   max-width: 300px;
 }
 .wed-app .tg-contact {
-  background: rgba(250, 244, 230, 0.1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(250, 244, 230, 0.2);
-  border-radius: 12px;
+  background: rgba(250, 244, 230, 0.08);
+  border: 1px solid rgba(230, 178, 62, 0.5);
+  border-radius: 4px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
