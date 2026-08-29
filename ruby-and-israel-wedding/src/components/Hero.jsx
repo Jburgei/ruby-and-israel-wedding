@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import Particles from "./shared/Particles.jsx"
+
 
 export default function Hero() {
   return (
@@ -14,7 +14,6 @@ export default function Hero() {
       }}
     >
       <div className="hero-rings" />
-      <Particles />
       <div className="hero-top">
         <div className="hero-invite">
           <p className="eyebrow">We are thrilled to invite you to the wedding of</p>

@@ -152,17 +152,6 @@ body,
     linear-gradient(155deg, #3a4d68 0%, #54698a 42%, #7e93b0 78%, #96a8c4 100%);
   color: var(--cream-lt);
 }
-.wed-app .hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 90px;
-  background: linear-gradient(to bottom, transparent, var(--canvas));
-  z-index: 1;
-  pointer-events: none;
-}
 .wed-app .hero-rings {
   position: absolute;
   top: -70px;
@@ -274,6 +263,7 @@ body,
 .wed-app .std {
   position: relative;
   background: var(--canvas);
+  border-top: 1px solid rgba(230, 178, 62, 0.25);
   padding: 96px 6vw;
   text-align: center;
 }
@@ -293,6 +283,12 @@ body,
   letter-spacing: 0.03em;
   line-height: 1;
   margin: 8px 0 22px;
+}
+.wed-app .std-divider {
+  width: 44px;
+  height: 1.5px;
+  background: var(--coral);
+  margin: 0 auto 26px;
 }
 .wed-app .std p {
   font-family: var(--display);
@@ -331,26 +327,6 @@ body,
     transparent 100%
   );
   z-index: 1;
-}
-.wed-app .story-fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 160px;
-  background: linear-gradient(to bottom, transparent, var(--canvas));
-  z-index: 2;
-  pointer-events: none;
-}
-.wed-app .story-fade-top {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 90px;
-  background: linear-gradient(to top, transparent, var(--canvas));
-  z-index: 2;
-  pointer-events: none;
 }
 .wed-app .story-card {
   position: relative;
@@ -874,17 +850,6 @@ body,
     padding: 64px 6vw;
   }
 }
-.wed-app .gallery::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 90px;
-  z-index: 5;
-  pointer-events: none;
-  background: linear-gradient(to top, var(--canvas), transparent);
-}
 .wed-app .gallery .eyebrow {
   color: var(--gold-lt);
   margin-bottom: 16px;
@@ -1060,6 +1025,7 @@ body,
   position: relative;
   background: radial-gradient(80% 60% at 50% 100%, rgba(238, 143, 110, 0.14), transparent 65%),
     var(--dusty);
+  border-top: 1px solid rgba(230, 178, 62, 0.3);
   padding: 100px 8vw;
   text-align: center;
   overflow: hidden;
@@ -1069,17 +1035,7 @@ body,
     padding: 72px 8vw;
   }
 }
-.wed-app .closing::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 90px;
-  background: linear-gradient(to bottom, var(--canvas), transparent);
-  z-index: 1;
-  pointer-events: none;
-}
+
 .wed-app .closing > .reveal {
   position: relative;
   z-index: 1;
@@ -1158,16 +1114,8 @@ body,
   background: linear-gradient(160deg, rgba(22, 35, 63, 0.68) 0%, rgba(22, 35, 63, 0.78) 100%);
   z-index: 1;
 }
-.wed-app .travel-gift::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 90px;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(to bottom, var(--canvas), transparent);
+.wed-app .travel-gift {
+  border-top: 1px solid rgba(230, 178, 62, 0.25);
 }
 .wed-app .tg-grid {
   position: relative;
