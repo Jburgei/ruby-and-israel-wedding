@@ -20,10 +20,10 @@ export function useReveal() {
   return ref;
 }
 
-export default function Reveal({ children, className = "" }) {
+export default function Reveal({ children, className = "", id }) {
   const ref = useReveal();
   return (
-    <div ref={ref} className={`reveal ${className}`}>
+    <div ref={ref} className={`reveal ${className}`} id={id}>
       {children}
     </div>
   );

@@ -7,6 +7,7 @@ export default function OurStory() {
     <section className="story" id="story">
       <img className="story-bg" src="/images/Our_story.jpg" alt="Ruby and Israel" />
       <div className="story-scrim" />
+      <div className="story-fade-top" />
       <div className="story-fade" />
       <Particles count={16} />
 
