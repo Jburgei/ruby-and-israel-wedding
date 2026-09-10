@@ -2,10 +2,8 @@ import React, { useCallback, useState } from "react";
 import { Calendar } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
 
-function submitRsvp(payload) {
-  // a real endpoint 
-  return new Promise((resolve) => setTimeout(() => resolve(payload), 500));
-}
+// Paste your Apps Script Web App URL here (ends in /exec).
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwFUX1I2sPAsRqFJfwRfASw-BpRuJHnFFHFGBalrwm3GDX7At9zmCXfWIqvCxn-NPAJwg/exec";
 
 export default function RSVP() {
   const [name, setName] = useState("");
@@ -27,10 +25,20 @@ export default function RSVP() {
 
       setSubmitting(true);
       try {
-        // TODO: replace with a real endpoint (Formspree, Getform, a small
-        // backend route, etc). This currently just simulates a network call
-        // so the form's states can be tested end to end.
-        await submitRsvp({ name: name.trim(), phone: phone.trim(), attending });
+        // Apps Script Web Apps don't return normal CORS headers, so we use
+        // no-cors mode — the request still goes through and the row still
+        // gets appended, we just can't read a response back to check it.
+        await fetch(SHEET_ENDPOINT, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            name: name.trim(),
+            phone: phone.trim(),
+            attending: attending === "yes" ? "Yes, attending" : "No, can't make it",
+          }),
+        });
+
         setSubmitted(true);
       } catch (err) {
         setErrors({ form: "Something went wrong, please try again." });
