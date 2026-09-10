@@ -5,7 +5,7 @@ import Particles from "./shared/Particles.jsx";
 export default function OurStory() {
   return (
     <section className="story" id="story">
-      <img className="story-bg" src="/images/Our_story.jpg" alt="Ruby and Israel" />
+      <img className="story-bg" src="/images/Highschool picture_1.jpg" alt="Ruby and Israel in high school" />
       <div className="story-scrim" />
       <Particles count={16} />
 
@@ -16,7 +16,7 @@ export default function OurStory() {
         <div className="story-card-content">
           <p className="eyebrow">Our story</p>
           <p className="story-body">
-            It all began in the hallways of high school &mdash; two teenagers
+            It all began in the hallways of high school two teenagers
             who had no idea that a simple friendship would grow into forever.
             Through the years, that bond only deepened, watching life&rsquo;s
             changes and growing stronger with every chapter. Today, we&rsquo;re

@@ -10,8 +10,8 @@ const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeU
 
 // Update names and numbers once confirmed.
 const CONTACTS = [
-  { name: "Caroline", phone: "+254 723393509" },
-  { name: "Samson", phone: "+254 721662045" },
+  { name: "Israel", phone: "+254 748167830" },
+  { name: "Ruby", phone: "+254 714223019" },
 ];
 
 function toWhatsAppLink(phone) {

@@ -21,7 +21,9 @@ export default function Hero() {
         </div>
         <div className="hero-names">
           <div className="names">
-            Ruby<span className="hero-amp">&amp;</span>Israel
+            Ruby Bukachi
+            <span className="hero-amp">&amp;</span>
+            Israel Burgei
           </div>
         </div>
       </div>

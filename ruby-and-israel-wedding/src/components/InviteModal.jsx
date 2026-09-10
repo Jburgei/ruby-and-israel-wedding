@@ -28,11 +28,15 @@ export default function InviteModal({ onClose }) {
             you to the wedding of
           </p>
           <div className="invite-names">
-            Ruby<span className="hero-amp">&amp;</span>Israel
+            Peace Ruby Wangari Bukachi
+            <span className="invite-amp">&amp;</span>
+            Israel Michael Kipkemei Burgei
           </div>
           <div className="invite-divider" />
           <p className="invite-eyebrow">Save the date</p>
-          <div className="invite-date">04 &middot; 12 &middot; 26</div>
+          <div className="invite-date">
+            Saturday, the Fourth of December, 2026
+          </div>
           <p className="invite-message">
             We would be delighted to share this wonderful celebration with
             you on our wedding day.

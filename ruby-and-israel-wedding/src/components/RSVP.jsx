@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Calendar } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
 
-// Paste your Apps Script Web App URL here (ends in /exec).
+
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwFUX1I2sPAsRqFJfwRfASw-BpRuJHnFFHFGBalrwm3GDX7At9zmCXfWIqvCxn-NPAJwg/exec";
 
 export default function RSVP() {
@@ -25,9 +25,7 @@ export default function RSVP() {
 
       setSubmitting(true);
       try {
-        // Apps Script Web Apps don't return normal CORS headers, so we use
-        // no-cors mode — the request still goes through and the row still
-        // gets appended, we just can't read a response back to check it.
+        
         await fetch(SHEET_ENDPOINT, {
           method: "POST",
           mode: "no-cors",
