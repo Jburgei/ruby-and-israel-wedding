@@ -10,6 +10,11 @@ const VERSE_REF = "1 Corinthians 13:4, 7";
 export default function Closing() {
   return (
     <section className="closing">
+        <div className="seam-amp" aria-hidden="true">
+          <span />
+          <em>&amp;</em>
+          <span />
+        </div>
         <Particles />
       <Reveal>
         <p className="closing-verse">&ldquo;{VERSE_TEXT}&rdquo;</p>

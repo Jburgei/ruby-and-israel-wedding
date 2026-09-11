@@ -217,18 +217,8 @@ body,
 .wed-app .hero-invite {
   max-width: 280px;
 }
-.wed-app .hero-invite p:first-child {
+.wed-app .hero-invite .eyebrow {
   color: var(--gold-lt);
-  margin-bottom: 14px;
-}
-.wed-app .hero-invite p:last-child {
-  font-family: var(--display);
-  font-style: italic;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.6;
-  color: var(--cream-lt);
-  opacity: 0.92;
 }
 .wed-app .hero-names {
   text-align: right;
@@ -1168,16 +1158,27 @@ body,
   text-align: center;
   overflow: hidden;
 }
-.wed-app .closing::before {
-  content: "";
+.wed-app .seam-amp {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 50%;
   top: 0;
-  height: 42px;
-  background: linear-gradient(to bottom, var(--canvas), transparent);
-  z-index: 1;
-  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wed-app .seam-amp span {
+  width: 30px;
+  height: 1px;
+  background: var(--gold);
+}
+.wed-app .seam-amp em {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--gold);
 }
 @media (max-width: 700px) {
   .wed-app .closing {

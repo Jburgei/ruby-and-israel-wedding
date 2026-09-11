@@ -17,7 +17,6 @@ export default function Hero() {
       <div className="hero-top">
         <div className="hero-invite">
           <p className="eyebrow">We are thrilled to invite you to the wedding of</p>
-          <p>Two stories becoming one, held in the presence of family and friends.</p>
         </div>
         <div className="hero-names">
           <div className="names">
