@@ -214,6 +214,16 @@ body,
   position: relative;
   z-index: 1;
 }
+@media (max-width: 700px) {
+  .wed-app .hero-top {
+    margin-top: min(32vh, 260px);
+  }
+}
+@media (max-width: 700px) and (max-height: 700px) {
+  .wed-app .hero-top {
+    margin-top: 22vh;
+  }
+}
 .wed-app .hero-invite {
   max-width: 280px;
 }
