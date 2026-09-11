@@ -35,7 +35,7 @@ export default function InviteModal({ onClose }) {
           <div className="invite-divider" />
           <p className="invite-eyebrow">Save the date</p>
           <div className="invite-date">
-            Saturday, the Fourth of December, 2026
+            Friday, the Fourth of December, 2026
           </div>
           <p className="invite-message">
             We would be delighted to share this wonderful celebration with
@@ -43,7 +43,7 @@ export default function InviteModal({ onClose }) {
           </p>
           <div className="invite-divider" />
           <p className="invite-eyebrow">Join us</p>
-          <p className="invite-detail-strong">Saturday, 4th December 2026</p>
+          <p className="invite-detail-strong">Friday, 4th December 2026</p>
           <p className="invite-detail">12:00 PM</p>
           <p className="invite-detail-strong">CITAM Karen</p>
           <p className="invite-detail">Langata Road, Nairobi, Kenya</p>

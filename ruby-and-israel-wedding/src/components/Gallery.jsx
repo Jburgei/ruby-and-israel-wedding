@@ -130,6 +130,12 @@ export default function Gallery() {
       </div>
 
       <p className="gallery-caption">Ruby &amp; Israel &middot; December 2026</p>
+
+      <div className="seam-ornament" aria-hidden="true">
+        <span />
+        <i />
+        <span />
+      </div>
     </section>
   );
 }

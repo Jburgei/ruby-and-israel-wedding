@@ -9,7 +9,7 @@ export default function SaveTheDate() {
         <p className="eyebrow">Save the date</p>
         <div className="date-weekday">Friday</div>
         <div className="date-words">The Fourth of December</div>
-        <div className="date-year">2026</div>
+        <div className="date-year">Two Thousand &amp; Twenty&#8209;Six</div>
         <div className="std-divider" />
         <p>
           We would be delighted to share this wonderful celebration with you
