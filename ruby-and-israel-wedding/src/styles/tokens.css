@@ -776,6 +776,22 @@ body,
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.wed-app .submit-btn:disabled {
+  opacity: 0.85;
+  cursor: default;
+}
+.wed-app .submit-btn .spin {
+  animation: wed-spin 0.8s linear infinite;
+}
+@keyframes wed-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .wed-app .submit-btn:hover {
   background: var(--maroon);

@@ -8,7 +8,7 @@ export default function Hero() {
       className="hero"
       style={{
         backgroundImage:
-          "linear-gradient(155deg, rgba(16,27,50,.6), rgba(42,63,104,.4)), url(/images/Hero_1.PNG)",
+          "linear-gradient(155deg, rgba(16,27,50,.6), rgba(42,63,104,.4)), url(/images/Gallery_12.jpeg)",
         backgroundSize: "cover",
         backgroundPosition: "50% 25%",
       }}

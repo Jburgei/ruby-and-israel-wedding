@@ -1,0 +1,16 @@
+# Force Git to always treat these as binary, never touching line endings.
+# Without this, Windows Git (core.autocrlf=true) can silently corrupt files
+# that don't obviously "look binary" -- like a ReportLab-generated PDF,
+# which can be almost entirely plain ASCII text internally with no NUL
+# bytes for Git to detect on its own.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.ico binary
+*.woff binary
+*.woff2 binary

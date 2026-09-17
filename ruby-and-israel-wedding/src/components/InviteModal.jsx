@@ -28,7 +28,7 @@ export default function InviteModal({ onClose }) {
             you to the wedding of
           </p>
           <div className="invite-names">
-            Peace Ruby Wangari Bukachi
+            Peace Ruby Wangare Bukachi
             <span className="invite-amp">&amp;</span>
             Israel Michael Kipkemei Burgei
           </div>
@@ -52,7 +52,7 @@ export default function InviteModal({ onClose }) {
         <a
           className="btn-gold invite-download"
           href="/Ruby_and_Israel_Invitation.pdf"
-          download="Ruby & Israel Invitation.pdf"
+          download="Ruby-and-Israel-Invitation.pdf"
         >
           <Download size={14} /> Download Invitation
         </a>
