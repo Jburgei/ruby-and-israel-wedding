@@ -3,14 +3,14 @@ import { ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
 
 const SLIDES = [
-  { src: "/images/Highschool picture_1.jpg", alt: "Ruby and Israel" },
+  { src: "/images/Hero_1.PNG", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_13.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_7.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_11.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_10.jpeg", alt: "Ruby and Israel" },
+  { src: "/images/Gallery_14.jpeg", alt: "Ruby and Israel" },
   { src: "/images/Gallery_8.jpeg", alt: "Ruby and Israel" },
   { src: "/images/Gallery_9.jpeg", alt: "Ruby and Israel" },
-  { src: "/images/Gallery_10.jpeg", alt: "Ruby and Israel" },
-  { src: "/images/Gallery_11.jpeg", alt: "Ruby and Israel" },
-  { src: "/images/Gallery_12.jpeg", alt: "Ruby and Israel" },
-  { src: "/images/Gallery_13.jpeg", alt: "Ruby and Israel" },
-  { src: "/images/Gallery_14.jpeg", alt: "Ruby and Israel" },
 ];
 
 const ROTATIONS = [-3, 2.5, -2, 3.5, -2.8, 3, -3.4];
