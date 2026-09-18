@@ -857,7 +857,7 @@ body,
 .wed-app .intro-photo {
   position: absolute;
   inset: -20px;
-  background-image: url(/images/Gallery_12_couple.jpg);
+  background-image: url(/images/Gallery_12.jpeg);
   background-size: cover;
   background-position: 50% 25%;
   filter: blur(22px);
