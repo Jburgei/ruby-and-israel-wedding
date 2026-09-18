@@ -182,12 +182,12 @@ body,
     url("/images/Gallery_12_couple.jpg"),
     linear-gradient(155deg, #3a4d68 0%, #54698a 42%, #7e93b0 78%, #96a8c4 100%);
   background-size: cover, cover, cover, cover, cover;
-  background-position: center, center, center, 45% 15%, center;
+  background-position: center, center, center, 43% 5%, center;
   background-repeat: no-repeat;
 }
 @media (max-width: 700px) {
   .wed-app .hero-photo {
-    background-position: center, center, center, 41% 10%, center;
+    background-position: center, center, center, 43% 0%, center;
   }
 }
 @media (max-width: 700px) {
