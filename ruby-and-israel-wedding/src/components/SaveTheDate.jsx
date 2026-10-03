@@ -4,7 +4,7 @@ import Countdown from "./shared/Countdown.jsx";
 
 export default function SaveTheDate() {
   return (
-    <section className="std">
+    <section className="std" id="save-the-date">
       <Reveal>
         <p className="eyebrow">Save the date</p>
         <div className="date-weekday">Friday</div>

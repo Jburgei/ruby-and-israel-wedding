@@ -25,12 +25,13 @@ export default function EnvelopeIntro({ onDone }) {
       <div className="intro-photo" />
       <div className="intro-scrim" />
       <div className="intro-content">
-        <span className="intro-monogram">
-          R<span className="hero-amp">&amp;</span>I
-        </span>
-        <span className="intro-date">December 4th, 2026</span>
-        <span className="intro-hint">Tap to begin</span>
-      </div>
+  <span className="intro-eyebrow">The Wedding Of</span>
+  <span className="intro-monogram">
+    Ruby<span className="hero-amp">&amp;</span>Israel
+  </span>
+  <span className="intro-date">December 4th, 2026</span>
+  <span className="intro-hint">Tap to begin</span>
+</div>
     </button>
   );
 }

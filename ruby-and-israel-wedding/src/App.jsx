@@ -5,6 +5,7 @@ import Hero from "./components/Hero.jsx";
 import SaveTheDate from "./components/SaveTheDate.jsx";
 import OurStory from "./components/OurStory.jsx";
 import LetsCelebrate from "./components/LetsCelebrate.jsx";
+import Colors from "./components/Colors.jsx";
 import TravelGift from "./components/TravelGift.jsx";
 import Gallery from "./components/Gallery.jsx";
 import RSVP from "./components/RSVP.jsx";
@@ -22,6 +23,7 @@ export default function App() {
       <SaveTheDate />
       <OurStory />
       <LetsCelebrate />
+      <Colors />
       <TravelGift />
       <Gallery />
       <RSVP />

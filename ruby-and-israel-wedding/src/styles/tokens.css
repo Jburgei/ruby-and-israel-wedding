@@ -331,6 +331,10 @@ body,
   letter-spacing: 0.2em;
   text-transform: uppercase;
   animation: bob 2.4s ease-in-out infinite;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 @keyframes bob {
   0%,
@@ -602,6 +606,62 @@ body,
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+.wed-app .colors {
+  position: relative;
+  background: var(--canvas);
+  padding: 90px 6vw;
+  text-align: center;
+}
+@media (max-width: 700px) {
+  .wed-app .colors {
+    padding: 64px 6vw;
+  }
+}
+.wed-app .colors .eyebrow {
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.wed-app .colors h2 {
+  font-family: var(--display);
+  font-size: clamp(32px, 6vw, 44px);
+  color: var(--navy);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.wed-app .colors-sub {
+  font-size: 15px;
+  color: var(--navy-2);
+  max-width: 420px;
+  margin: 0 auto 36px;
+  line-height: 1.7;
+}
+.wed-app .colors-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+.wed-app .colors-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.wed-app .colors-dot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  box-shadow: 0 10px 22px -10px rgba(22, 35, 63, 0.35);
+  border: 2px solid var(--white);
+}
+.wed-app .colors-label {
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dusty);
 }
 .wed-app .btn-gold {
   position: relative;
@@ -891,6 +951,19 @@ body,
   font-size: clamp(48px, 10vw, 88px);
   color: var(--cream-lt);
   letter-spacing: 0.02em;
+}
+.wed-app .intro-monogram {
+  font-size: clamp(34px, 9vw, 64px);
+  white-space: nowrap;
+}
+.wed-app .intro-eyebrow {
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  opacity: 0.85;
+  margin-bottom: 4px;
 }
 .wed-app .intro-date {
   font-family: var(--body);
