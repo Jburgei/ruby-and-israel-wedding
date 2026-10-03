@@ -1657,3 +1657,24 @@ body,
 .wed-app .invite-download {
   margin-top: 22px;
 }
+.wed-app .music-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(22, 35, 63, 0.75);
+  border: 1px solid rgba(230, 178, 62, 0.5);
+  color: var(--cream-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease;
+}
+.wed-app .music-toggle:hover {
+  background: rgba(22, 35, 63, 0.9);
+}
