@@ -948,13 +948,23 @@ body,
 }
 .wed-app .intro-monogram {
   font-family: var(--display);
-  font-size: clamp(48px, 10vw, 88px);
   color: var(--cream-lt);
   letter-spacing: 0.02em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
-.wed-app .intro-monogram {
-  font-size: clamp(34px, 9vw, 64px);
+.wed-app .intro-name-line {
+  font-size: clamp(30px, 7.5vw, 54px);
+  line-height: 1.15;
   white-space: nowrap;
+}
+.wed-app .intro-amp {
+  font-style: italic;
+  font-size: clamp(18px, 4vw, 28px);
+  color: var(--gold-lt);
+  padding: 2px 0;
 }
 .wed-app .intro-eyebrow {
   font-family: var(--body);

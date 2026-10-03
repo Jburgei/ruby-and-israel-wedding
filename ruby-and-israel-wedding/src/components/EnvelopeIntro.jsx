@@ -27,8 +27,10 @@ export default function EnvelopeIntro({ onDone }) {
       <div className="intro-content">
   <span className="intro-eyebrow">The Wedding Of</span>
   <span className="intro-monogram">
-    Ruby Bukachi<span className="hero-amp">&amp;</span>Israel Burgei
-  </span>
+  <span className="intro-name-line">Ruby Bukachi</span>
+  <span className="intro-amp">&amp;</span>
+  <span className="intro-name-line">Israel Burgei</span>
+</span>
   <span className="intro-date">December 4th, 2026</span>
   <span className="intro-hint">Tap to begin</span>
 </div>
