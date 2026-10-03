@@ -3,6 +3,7 @@ import Reveal from "./shared/Reveal.jsx";
 
 const PALETTE = [
   { name: "Navy", hex: "#16233f" },
+  { name: "Burgundy", hex: "#5e1b30" },
   { name: "Gold", hex: "#e3b23e" },
   { name: "Coral", hex: "#ee8f6e" },
   { name: "Blush", hex: "#e8a6b8" },
