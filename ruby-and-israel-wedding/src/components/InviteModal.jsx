@@ -41,20 +41,14 @@ export default function InviteModal({ onClose }) {
           <div className="invite-message">
             Warmly invite you to our
             </div>
-          <p className="invite-eyebrow">Wedding Ceremony</p>
+          <p className="invite-eyebrow">Wedding</p>
           <p className="invite-detail-strong">Friday, 4th December 2026</p>
           <p className="invite-detail">12:00 PM</p>
           <p className="invite-detail-strong">CITAM Karen</p>
           <p className="invite-detail">Langata Road, Nairobi, Kenya</p>
         </div>
 
-        <a
-          className="btn-gold invite-download"
-          href="/Ruby_and_Israel_Invitation.pdf"
-          download="Ruby-and-Israel-Invitation.pdf"
-        >
-          <Download size={14} /> Download Invitation
-        </a>
+    
       </div>
     </div>
   );
