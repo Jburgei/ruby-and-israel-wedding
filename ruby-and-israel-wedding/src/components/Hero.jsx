@@ -1,11 +1,8 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 
-export default function Hero() {
-  const scrollToNext = () => {
-    document.getElementById("save-the-date")?.scrollIntoView({ behavior: "smooth" });
-  };
 
+export default function Hero() {
   return (
     <section className="hero">
       <div className="hero-photo" />
@@ -26,15 +23,10 @@ export default function Hero() {
         <div className="hero-date">
           Taking place on the day of <b>December 4th, 2026</b>
         </div>
-        <button
-          type="button"
-          className="scroll-cue"
-          onClick={scrollToNext}
-          aria-label="Scroll to next section"
-        >
+        <div className="scroll-cue">
           <span>Scroll</span>
           <ChevronDown size={16} />
-        </button>
+        </div>
       </div>
     </section>
   );

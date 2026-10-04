@@ -22,27 +22,26 @@ export default function InviteModal({ onClose }) {
         </button>
 
         <div className="invite-card">
-          <p className="invite-eyebrow">
-            We are thrilled to invite
-            <br />
-            you to the wedding of
-          </p>
+          <p className="invite-eyebrow">We </p>
           <div className="invite-names">
             Peace Ruby Wangare Bukachi
             <span className="invite-amp">&amp;</span>
             Israel Michael Kipkemei Burgei
           </div>
           <div className="invite-divider" />
-          <p className="invite-eyebrow">Save the date</p>
-          <div className="invite-date">
-            Friday, the Fourth of December, 2026
-          </div>
+          <p className="invite-eyebrow">Together with our Parents</p>
           <p className="invite-message">
-            We would be delighted to share this wonderful celebration with
-            you on our wedding day.
+            Rev. Grace N. Bukachi &amp; James Bukachi
           </p>
-          <div className="invite-divider" />
-          <p className="invite-eyebrow">Join us</p>
+          <p className="invite-message">and</p>
+          <p className="invite-message">
+            Caroline Burgei &amp; Samson Burgei
+          </p>
+          <div className="invite-divider" /> 
+          <div className="invite-message">
+            Warmly invite you to our
+            </div>
+          <p className="invite-eyebrow">Wedding Ceremony</p>
           <p className="invite-detail-strong">Friday, 4th December 2026</p>
           <p className="invite-detail">12:00 PM</p>
           <p className="invite-detail-strong">CITAM Karen</p>
