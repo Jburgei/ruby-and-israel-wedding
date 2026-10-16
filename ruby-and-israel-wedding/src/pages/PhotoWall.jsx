@@ -9,7 +9,66 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { Home, Heart, User } from "lucide-react";
+import { Image as ImageIcon, Heart, Gift as GiftIcon, User, Plus, Copy, Check } from "lucide-react";
+
+const PAYBILL_NUMBER = "4816627";
+
+function CopyField({ label, value }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard can be unavailable (e.g. no HTTPS) — fail quietly.
+    }
+  }
+
+  return (
+    <div className="pw-gift-field">
+      <div>
+        <div className="pw-gift-field-label">{label}</div>
+        <div className="pw-gift-field-value">{value}</div>
+      </div>
+      <button type="button" className="pw-copy-btn" onClick={handleCopy}>
+        {copied ? <Check size={16} /> : <Copy size={16} />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
+
+function GiftPage({ profile }) {
+  const [accountName, setAccountName] = useState(profile?.name || "");
+
+  return (
+    <div className="pw-gift-page">
+      <h1>Send a gift</h1>
+      <p>You can send a gift to Ruby and Israel via M-PESA Paybill.</p>
+
+      <CopyField label="M-PESA Paybill" value={PAYBILL_NUMBER} />
+
+      <div className="pw-field" style={{ marginTop: 16 }}>
+        <label>Account number (your name)</label>
+        <input
+          type="text"
+          value={accountName}
+          onChange={(e) => setAccountName(e.target.value)}
+        />
+      </div>
+
+      {accountName.trim() && <CopyField label="Account number" value={accountName.trim()} />}
+
+      <p className="pw-gift-note">
+        Go to M-PESA &rarr; Lipa na M-PESA &rarr; Pay Bill, enter the Paybill
+        number above, and use your name as the account number so the couple
+        knows who the gift is from.
+      </p>
+    </div>
+  );
+}
 import { db, onAuthChange, logoutGuest } from "../firebase";
 import {
   getCachedProfile,
@@ -20,31 +79,23 @@ import ProfileSetupModal from "../components/photowall/ProfileSetupModal.jsx";
 import NewPostModal from "../components/photowall/NewPostModal.jsx";
 import PostCard from "../components/photowall/PostCard.jsx";
 import Lightbox from "../components/photowall/Lightbox.jsx";
-import StoryViewer from "../components/photowall/StoryViewer.jsx";
-
-const ACCENTS = ["#f2c14e", "#ff8f66", "#ff9fc0", "#6fb8e8"];
 
 export default function PhotoWall() {
   const [authReady, setAuthReady] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [profile, setProfile] = useState(() => getCachedProfile());
   const [posts, setPosts] = useState([]);
-  const [guests, setGuests] = useState([]);
   const [showNewPost, setShowNewPost] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [sortMode, setSortMode] = useState("recent"); // "recent" | "loved"
-  const [onlyMine, setOnlyMine] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [storyGuest, setStoryGuest] = useState(null);
+  const [tab, setTab] = useState("moments"); // "moments" | "blessings" | "gift" | "me"
 
   useEffect(() => {
     // Only the very first auth check after the page loads should ever sign
     // someone back out for having no profile doc yet — that's the signal
-    // for a leftover pre-account session (e.g. an old anonymous sign-in).
-    // A fresh register/login that just happened in this same page load
-    // fires its own auth event too, and its profile doc may simply not
-    // have finished writing yet — that one must never trigger a sign-out,
-    // or registering/logging in can never actually complete.
+    // for a leftover pre-account session. A fresh join that just happened
+    // in this same page load fires its own auth event too, and its profile
+    // doc may simply not have finished writing yet — that one must never
+    // trigger a sign-out, or joining can never actually complete.
     let isInitial = true;
 
     const unsub = onAuthChange((user) => {
@@ -58,7 +109,8 @@ export default function PhotoWall() {
           if (snap.exists()) {
             const p = {
               name: snap.data().name || "Guest",
-              avatarUrl: snap.data().avatarUrl || "",
+              phone: snap.data().phone || "",
+              isAdmin: !!snap.data().isAdmin,
             };
             setProfile(p);
             setCachedProfile(p);
@@ -83,64 +135,32 @@ export default function PhotoWall() {
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "guestVisits"), (snap) => {
-      setGuests(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
     if (!authUser || !profile) return;
     setDoc(
       doc(db, "guestVisits", authUser.uid),
       {
         name: profile.name || "",
-        avatarUrl: profile.avatarUrl || "",
         lastSeen: serverTimestamp(),
       },
       { merge: true }
     );
   }, [authUser, profile]);
 
-  const guestsWithPosts = useMemo(
-    () => guests.filter((g) => posts.some((p) => p.uid === g.id && p.imageUrl)),
-    [guests, posts]
+  const moments = useMemo(
+    () => posts.filter((p) => p.type === "moment" || (!p.type && p.imageUrl)),
+    [posts]
   );
-
-  const storyPosts = useMemo(() => {
-    if (!storyGuest) return [];
-    return posts
-      .filter((p) => p.uid === storyGuest.id && p.imageUrl)
-      .slice()
-      .reverse();
-  }, [posts, storyGuest]);
-
-  const displayedPosts = useMemo(() => {
-    let list = posts;
-    if (onlyMine && authUser) {
-      list = list.filter((p) => p.uid === authUser.uid);
-    }
-    if (sortMode === "loved") {
-      list = [...list].sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
-    }
-    return list;
-  }, [posts, sortMode, onlyMine, authUser]);
-
-  // The lightbox only makes sense for photos — text-only posts are left out
-  // so prev/next never lands on one with nothing to show.
-  const photoPosts = useMemo(
-    () => displayedPosts.filter((p) => p.imageUrl),
-    [displayedPosts]
+  const blessings = useMemo(
+    () => posts.filter((p) => p.type === "blessing" || (!p.type && !p.imageUrl)),
+    [posts]
+  );
+  const myMoments = useMemo(
+    () => (authUser ? moments.filter((p) => p.uid === authUser.uid) : []),
+    [moments, authUser]
   );
 
   function handleLogout() {
     logoutGuest();
-  }
-
-  function handleGuestClick(guest) {
-    const hasPhotoPosts = posts.some((p) => p.uid === guest.id && p.imageUrl);
-    if (!hasPhotoPosts) return;
-    setStoryGuest(guest);
   }
 
   if (!authReady) {
@@ -160,166 +180,157 @@ export default function PhotoWall() {
   return (
     <div className="pw-page">
       <div className="pw-topbar">
-        <div className="pw-avatar-menu-wrap">
-          <button
-            type="button"
-            className="pw-topbar-avatar"
-            onClick={() => setShowMenu((v) => !v)}
-            aria-label="Account menu"
-          >
-            {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : myInitial}
-          </button>
-          {showMenu && (
-            <>
-              <div className="pw-menu-backdrop" onClick={() => setShowMenu(false)} />
-              <div className="pw-avatar-menu">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOnlyMine(true);
-                    setSortMode("recent");
-                    setShowMenu(false);
-                  }}
-                >
-                  My photos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMenu(false);
-                    handleLogout();
-                  }}
-                >
-                  Log out
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-        <span className="pw-topbar-title">Ruby &amp; Israel</span>
-        <span className="pw-topbar-spacer" aria-hidden="true" />
+        <span className="pw-monogram">I&nbsp;|&nbsp;R</span>
       </div>
 
-      {onlyMine ? (
-        <div className="pw-profile-header">
-          <span className="pw-profile-avatar">
-            {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : myInitial}
-          </span>
-          <h2>{profile.name || "Guest"}</h2>
-          <p>
-            {displayedPosts.length} photo{displayedPosts.length === 1 ? "" : "s"}
-          </p>
-          <div className="pw-profile-links">
-            <button type="button" className="pw-back-link" onClick={() => setOnlyMine(false)}>
-              Back to wall
+      {(tab === "moments" || tab === "blessings") && (
+        <>
+          <div className="pw-header">
+            <h1>Ruby &amp; Israel</h1>
+            <p>4 December 2026 &middot; CITAM Karen</p>
+          </div>
+
+          <div className="pw-tabswitch">
+            <button
+              type="button"
+              className={`pw-tabswitch-btn ${tab === "moments" ? "active" : ""}`}
+              onClick={() => setTab("moments")}
+            >
+              Moments
             </button>
-            <button type="button" className="pw-back-link pw-back-link-solid" onClick={handleLogout}>
-              Log out
+            <button
+              type="button"
+              className={`pw-tabswitch-btn ${tab === "blessings" ? "active" : ""}`}
+              onClick={() => setTab("blessings")}
+            >
+              Blessings
             </button>
           </div>
-        </div>
-      ) : (
-        <>
-          {guestsWithPosts.length > 0 && (
-            <div className="pw-stories">
-              {guestsWithPosts.map((g, i) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  className="pw-story"
-                  style={{ "--ring": ACCENTS[i % ACCENTS.length] }}
-                  onClick={() => handleGuestClick(g)}
-                >
-                  <span className="pw-story-ring">
-                    <span className="pw-story-avatar">
-                      {g.avatarUrl ? (
-                        <img src={g.avatarUrl} alt="" />
-                      ) : (
-                        (g.name || "G").charAt(0).toUpperCase()
-                      )}
-                    </span>
-                  </span>
-                  <span className="pw-story-name">{(g.name || "Guest").split(" ")[0]}</span>
-                </button>
+
+          <button
+            type="button"
+            className="pw-composer-bar"
+            onClick={() => setShowNewPost(true)}
+          >
+            <span className="pw-composer-avatar">{myInitial}</span>
+            <span className="pw-composer-placeholder">
+              {tab === "moments" ? "Share a photo..." : "Share a blessing..."}
+            </span>
+          </button>
+
+          {tab === "moments" ? (
+            <div className="pw-feed">
+              {moments.length === 0 && (
+                <p className="pw-empty">
+                  The wall is quiet for now — be the first to share a photo.
+                </p>
+              )}
+              {moments.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  myProfile={profile}
+                  onExpand={() =>
+                    setLightboxIndex(moments.findIndex((p) => p.id === post.id))
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="pw-feed">
+              {blessings.length === 0 && (
+                <p className="pw-empty">
+                  No blessings yet — be the first to write one.
+                </p>
+              )}
+              {blessings.map((post) => (
+                <PostCard key={post.id} post={post} myProfile={profile} />
               ))}
             </div>
           )}
-
-          <div className="pw-header">
-            <h1>Ruby &amp; Israel</h1>
-            <p>Guest photo wall</p>
-            <div className="pw-divider">
-              <span />
-              <i />
-              <span />
-            </div>
-            <p className="pw-stats">
-              {posts.length} post{posts.length === 1 ? "" : "s"} &middot; {guests.length}{" "}
-              guest{guests.length === 1 ? "" : "s"}
-            </p>
-          </div>
         </>
       )}
 
-      <div className="pw-feed">
-        {displayedPosts.length === 0 && (
-          <p className="pw-empty">
-            {onlyMine
-              ? "You haven't shared anything yet — tap + to post a photo or a message."
-              : "The wall is quiet for now — be the first to share a photo or a message."}
-          </p>
-        )}
-        {displayedPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            myProfile={profile}
-            onExpand={() =>
-              setLightboxIndex(photoPosts.findIndex((p) => p.id === post.id))
-            }
-          />
-        ))}
-      </div>
+      {tab === "gift" && (
+        <GiftPage profile={profile} />
+      )}
 
-      <button
-        type="button"
-        className="pw-fab"
-        onClick={() => setShowNewPost(true)}
-        aria-label="Add a photo or message"
-      >
-        +
-      </button>
+      {tab === "me" && (
+        <>
+          <div className="pw-profile-header">
+            <span className="pw-profile-avatar">{myInitial}</span>
+            <h2>{profile.name || "Guest"}</h2>
+          </div>
+
+          <p className="pw-profile-sub" style={{ textAlign: "center" }}>
+            Your moments
+          </p>
+
+          <div className="pw-feed">
+            {myMoments.length === 0 && (
+              <p className="pw-empty">
+                You haven't shared anything yet. Tap Share to add your first
+                moment.
+              </p>
+            )}
+            {myMoments.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                myProfile={profile}
+                onExpand={() =>
+                  setLightboxIndex(myMoments.findIndex((p) => p.id === post.id))
+                }
+              />
+            ))}
+          </div>
+
+          <button type="button" className="pw-logout-link" onClick={handleLogout}>
+            Log out
+          </button>
+        </>
+      )}
 
       <div className="pw-bottomnav">
         <button
           type="button"
-          className={`pw-navbtn ${sortMode === "recent" && !onlyMine ? "active" : ""}`}
-          onClick={() => {
-            setSortMode("recent");
-            setOnlyMine(false);
-          }}
+          className={`pw-navbtn ${tab === "moments" ? "active" : ""}`}
+          onClick={() => setTab("moments")}
         >
-          <Home size={20} />
-          <span>Wall</span>
+          <ImageIcon size={20} />
+          <span>Moments</span>
         </button>
         <button
           type="button"
-          className={`pw-navbtn ${sortMode === "loved" ? "active" : ""}`}
-          onClick={() => {
-            setSortMode("loved");
-            setOnlyMine(false);
-          }}
+          className={`pw-navbtn ${tab === "blessings" ? "active" : ""}`}
+          onClick={() => setTab("blessings")}
         >
           <Heart size={20} />
-          <span>Loved</span>
+          <span>Blessings</span>
         </button>
         <button
           type="button"
-          className={`pw-navbtn ${onlyMine ? "active" : ""}`}
-          onClick={() => setOnlyMine((v) => !v)}
+          className="pw-navbtn-share"
+          onClick={() => setShowNewPost(true)}
+          aria-label="Share a moment"
+        >
+          <Plus size={24} />
+        </button>
+        <button
+          type="button"
+          className={`pw-navbtn ${tab === "gift" ? "active" : ""}`}
+          onClick={() => setTab("gift")}
+        >
+          <GiftIcon size={20} />
+          <span>Gift</span>
+        </button>
+        <button
+          type="button"
+          className={`pw-navbtn ${tab === "me" ? "active" : ""}`}
+          onClick={() => setTab("me")}
         >
           <User size={20} />
-          <span>Mine</span>
+          <span>Me</span>
         </button>
       </div>
 
@@ -327,25 +338,19 @@ export default function PhotoWall() {
         <NewPostModal
           profile={profile}
           onClose={() => setShowNewPost(false)}
-          onPosted={() => setShowNewPost(false)}
+          onPosted={() => {
+            setShowNewPost(false);
+            setTab("moments");
+          }}
         />
       )}
 
       {lightboxIndex !== null && (
         <Lightbox
-          posts={photoPosts}
+          posts={moments}
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onChangeIndex={setLightboxIndex}
-        />
-      )}
-
-      {storyGuest && storyPosts.length > 0 && (
-        <StoryViewer
-          posts={storyPosts}
-          guestName={storyGuest.name || "Guest"}
-          guestAvatarUrl={storyGuest.avatarUrl || ""}
-          onClose={() => setStoryGuest(null)}
         />
       )}
     </div>

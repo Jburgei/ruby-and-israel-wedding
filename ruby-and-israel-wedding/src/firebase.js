@@ -3,8 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import {
   getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  signInAnonymously,
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
@@ -19,38 +18,36 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
-// Guests register/log in with a name + password instead of an e-mail.
-// Firebase Auth needs an e-mail-shaped identifier under the hood, so we
-// build one from a normalized version of the name under a fixed, fake
-// domain — guests never see or type this, it's just plumbing.
-function nameToEmail(name) {
-  const slug = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ".")
-    .replace(/^\.+|\.+$/g, "");
-  return `${slug || "guest"}@guest.burkachi.com`;
+// Guests no longer register with a password — signing up is just name +
+// phone number, and the phone/browser remembers them afterwards. Under the
+// hood we still need *some* Firebase Auth identity so Firestore security
+// rules have a request.auth.uid to check post ownership against, so every
+// guest gets a plain anonymous session. ensureSignedIn() makes sure one
+// exists (reusing the existing one if the browser already has it — that's
+// what makes a guest "remembered" after their first visit) and resolves
+// once we have a uid to work with.
+export function ensureSignedIn() {
+  return new Promise((resolve, reject) => {
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+    signInAnonymously(auth).then(
+      (cred) => resolve(cred.user),
+      (err) => reject(err)
+    );
+  });
 }
 
-export async function registerGuest(name, password) {
-  const cred = await createUserWithEmailAndPassword(auth, nameToEmail(name), password);
-  return cred.user;
-}
-
-export async function loginGuest(name, password) {
-  const cred = await signInWithEmailAndPassword(auth, nameToEmail(name), password);
-  return cred.user;
+export function onAuthChange(callback) {
+  return onAuthStateChanged(auth, callback);
 }
 
 export function logoutGuest() {
   return signOut(auth);
-}
-
-// Subscribes to auth state; callback receives the Firebase user or null.
-export function onAuthChange(callback) {
-  return onAuthStateChanged(auth, callback);
 }

@@ -16,16 +16,18 @@ import { ref, deleteObject } from "firebase/storage";
 import { Heart, MessageCircle, Trash2, Maximize2 } from "lucide-react";
 import { db, storage, auth } from "../../firebase";
 
-function formatLikesLabel(likes) {
-  if (likes.length === 0) return null;
-  const named = likes.filter((l) => l.name);
-  if (named.length === 0) {
-    return `${likes.length} like${likes.length === 1 ? "" : "s"}`;
-  }
-  const first = named[0].name;
-  const remaining = likes.length - 1;
-  if (remaining <= 0) return `Liked by ${first}`;
-  return `Liked by ${first} and ${remaining} other${remaining === 1 ? "" : "s"}`;
+function timeAgo(timestamp) {
+  if (!timestamp?.toDate) return "now";
+  const seconds = Math.floor((Date.now() - timestamp.toDate().getTime()) / 1000);
+  if (seconds < 5) return "now";
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  return `${Math.floor(days / 7)}w`;
 }
 
 export default function PostCard({ post, myProfile, onExpand }) {
@@ -46,8 +48,10 @@ export default function PostCard({ post, myProfile, onExpand }) {
   }, [post.id]);
 
   const liked = uid ? likes.some((l) => l.id === uid) : false;
-  const isOwner = uid && post.uid === uid;
-  const hasImage = !!post.imageUrl;
+  const isAdmin = !!myProfile?.isAdmin;
+  const canDelete = uid && (post.uid === uid || isAdmin);
+  const isMoment = post.type === "moment" || (!post.type && !!post.imageUrl);
+  const initial = (post.authorName || "G").charAt(0).toUpperCase();
 
   async function toggleLike() {
     const user = auth.currentUser;
@@ -68,7 +72,7 @@ export default function PostCard({ post, myProfile, onExpand }) {
   }
 
   function handleDoubleTap() {
-    if (!hasImage) return;
+    if (!isMoment) return;
     setBurst(true);
     window.setTimeout(() => setBurst(false), 700);
     if (!liked) {
@@ -118,7 +122,10 @@ export default function PostCard({ post, myProfile, onExpand }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm("Delete this post? This can't be undone.")) return;
+    const confirmMsg = isAdmin && post.uid !== uid
+      ? "Remove this post for everyone? This can't be undone."
+      : "Delete this post? This can't be undone.";
+    if (!window.confirm(confirmMsg)) return;
     setDeleting(true);
     try {
       if (post.imageUrl) {
@@ -136,120 +143,123 @@ export default function PostCard({ post, myProfile, onExpand }) {
     }
   }
 
-  const likesLabel = formatLikesLabel(likes);
+  const deleteButton = canDelete && (
+    <button
+      type="button"
+      className="pw-delete-btn"
+      onClick={handleDelete}
+      disabled={deleting}
+      aria-label="Delete post"
+      title={isAdmin && post.uid !== uid ? "Remove post (admin)" : "Delete post"}
+    >
+      <Trash2 size={17} />
+    </button>
+  );
+
+  // Blessings (text-only) render as a flat blush card with just the
+  // message, author and a heart — no photo, no comments.
+  if (!isMoment) {
+    return (
+      <div id={`post-${post.id}`} className="pw-blessing">
+        <p className="pw-blessing-text">{post.caption}</p>
+        <div className="pw-blessing-footer">
+          <span className="pw-blessing-author">{post.authorName || "Guest"}</span>
+          <div className="pw-blessing-meta">
+            <span className="pw-blessing-time">{timeAgo(post.createdAt)}</span>
+            <button
+              type="button"
+              className="pw-icon-btn"
+              onClick={toggleLike}
+              aria-label={liked ? "Unlike" : "Like"}
+            >
+              <Heart size={18} fill={liked ? "#7A1E3A" : "none"} color="#7A1E3A" />
+              {post.likeCount > 0 && <span className="pw-action-count">{post.likeCount}</span>}
+            </button>
+            {deleteButton}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div id={`post-${post.id}`} className="pw-post-wrap">
-      <div className="pw-post">
-        <div className="pw-post-header">
-          <div className="pw-post-header-left">
-            {post.authorAvatarUrl ? (
-              <img src={post.authorAvatarUrl} alt="" className="pw-avatar" />
-            ) : (
-              <div className="pw-avatar pw-avatar-fallback">
-                {(post.authorName || "G").charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span>{post.authorName || "Guest"}</span>
-          </div>
-
-          {isOwner && (
-            <button
-              type="button"
-              className="pw-delete-btn"
-              onClick={handleDelete}
-              disabled={deleting}
-              aria-label="Delete post"
-            >
-              <Trash2 size={17} />
-            </button>
-          )}
+    <div id={`post-${post.id}`} className="pw-post">
+      <div className="pw-post-header">
+        <div className="pw-post-header-left">
+          <div className="pw-avatar">{initial}</div>
+          <span className="pw-post-name">{post.authorName || "Guest"}</span>
+          <span className="pw-post-time">{timeAgo(post.createdAt)}</span>
         </div>
-
-        {hasImage && (
-          <div className="pw-image-wrap" onDoubleClick={handleDoubleTap}>
-            <img src={post.imageUrl} alt="" className="pw-post-image" />
-            {burst && (
-              <Heart
-                className="pw-heart-burst"
-                size={90}
-                fill="#5e1b30"
-                color="#5e1b30"
-              />
-            )}
-            <button
-              type="button"
-              className="pw-expand-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onExpand();
-              }}
-              aria-label="View fullscreen"
-            >
-              <Maximize2 size={15} />
-            </button>
-          </div>
-        )}
-
-        {!hasImage && post.caption && (
-          <p className="pw-text-post">{post.caption}</p>
-        )}
-
-        <div className="pw-actions">
-          <button
-            type="button"
-            className={`pw-icon-btn ${liked ? "pw-liked" : ""}`}
-            onClick={toggleLike}
-            aria-label={liked ? "Unlike" : "Like"}
-          >
-            <Heart size={24} fill={liked ? "#5e1b30" : "none"} color={liked ? "#5e1b30" : "#16233f"} />
-          </button>
-          <button
-            type="button"
-            className="pw-icon-btn"
-            onClick={toggleComments}
-            aria-label="Comments"
-          >
-            <MessageCircle size={23} color="#16233f" />
-          </button>
-        </div>
-
-        {likesLabel && <p className="pw-likes">{likesLabel}</p>}
-
-        {hasImage && post.caption && (
-          <p className="pw-post-caption">
-            <strong>{post.authorName || "Guest"}</strong> {post.caption}
-          </p>
-        )}
-
-        {!showComments && (post.commentCount || 0) > 0 && (
-          <button type="button" className="pw-comment-toggle" onClick={toggleComments}>
-            View all {post.commentCount} comment{post.commentCount === 1 ? "" : "s"}
-          </button>
-        )}
-
-        {showComments && (
-          <div className="pw-comments">
-            {comments.map((c) => (
-              <div key={c.id} className="pw-comment">
-                <strong>{c.authorName}</strong> {c.text}
-              </div>
-            ))}
-
-            <form className="pw-comment-form" onSubmit={handleComment}>
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Add a comment..."
-              />
-              <button type="submit" disabled={sending}>
-                Post
-              </button>
-            </form>
-          </div>
-        )}
+        {deleteButton}
       </div>
+
+      {post.caption && <p className="pw-post-caption">{post.caption}</p>}
+
+      <div className="pw-image-wrap" onDoubleClick={handleDoubleTap}>
+        <img src={post.imageUrl} alt="" className="pw-post-image" />
+        {burst && (
+          <Heart
+            className="pw-heart-burst"
+            size={90}
+            fill="#7A1E3A"
+            color="#7A1E3A"
+          />
+        )}
+        <button
+          type="button"
+          className="pw-expand-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            onExpand();
+          }}
+          aria-label="View fullscreen"
+        >
+          <Maximize2 size={15} />
+        </button>
+      </div>
+
+      <div className="pw-actions">
+        <button
+          type="button"
+          className={`pw-icon-btn ${liked ? "pw-liked" : ""}`}
+          onClick={toggleLike}
+          aria-label={liked ? "Unlike" : "Like"}
+        >
+          <Heart size={21} fill={liked ? "#7A1E3A" : "none"} color={liked ? "#7A1E3A" : "#1B2A4A"} />
+          {post.likeCount > 0 && <span className="pw-action-count">{post.likeCount}</span>}
+        </button>
+        <button
+          type="button"
+          className="pw-icon-btn"
+          onClick={toggleComments}
+          aria-label="Comments"
+        >
+          <MessageCircle size={20} color="#1B2A4A" />
+          {post.commentCount > 0 && <span className="pw-action-count">{post.commentCount}</span>}
+        </button>
+      </div>
+
+      {showComments && (
+        <div className="pw-comments">
+          {comments.map((c) => (
+            <div key={c.id} className="pw-comment">
+              <strong>{c.authorName}</strong> {c.text}
+            </div>
+          ))}
+
+          <form className="pw-comment-form" onSubmit={handleComment}>
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add a comment..."
+            />
+            <button type="submit" disabled={sending}>
+              Post
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

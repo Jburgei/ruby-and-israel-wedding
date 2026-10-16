@@ -3,7 +3,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db, auth } from "../../firebase";
 
-const STAMP_TEXT = "Ruby & Israel · 12.04.26";
+const STAMP_TEXT = "Ruby & Israel · 4 Dec 2026";
 const MAX_DIMENSION = 1600;
 
 // Draws the uploaded photo onto a canvas and stamps the wedding name/date
@@ -44,7 +44,7 @@ function stampImage(file) {
         const y = canvas.height - boxH - margin;
         const radius = boxH / 2;
 
-        ctx.fillStyle = "rgba(22, 35, 63, 0.55)";
+        ctx.fillStyle = "rgba(27, 42, 74, 0.6)";
         ctx.beginPath();
         if (ctx.roundRect) {
           ctx.roundRect(x, y, boxW, boxH, radius);
@@ -53,7 +53,7 @@ function stampImage(file) {
         }
         ctx.fill();
 
-        ctx.fillStyle = "#fdf6e3";
+        ctx.fillStyle = "#FBF8F3";
         ctx.textBaseline = "middle";
         ctx.fillText(STAMP_TEXT, x + paddingX, y + boxH / 2 + 1);
 
@@ -82,60 +82,81 @@ function stampImage(file) {
 }
 
 export default function NewPostModal({ profile, onClose, onPosted }) {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState("");
+  const [files, setFiles] = useState([]); // [{ file, preview }]
   const [caption, setCaption] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
 
-  function handleFile(e) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+  function handleFiles(e) {
+    const picked = Array.from(e.target.files || []);
+    if (!picked.length) return;
+    const withPreviews = picked.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setFiles((prev) => [...prev, ...withPreviews]);
+    e.target.value = "";
   }
 
-  function clearFile() {
-    setFile(null);
-    setPreview("");
+  function removeFile(index) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!file && !caption.trim()) {
-      setError("Add a photo, write something, or both.");
+    if (!files.length && !caption.trim()) {
+      setError("Add a photo, a blessing, or both.");
       return;
     }
     setPosting(true);
     setError("");
     try {
       const user = auth.currentUser;
+      const trimmedCaption = caption.trim();
 
-      let imageUrl = "";
-      if (file) {
-        let uploadBlob = file;
-        try {
-          uploadBlob = await stampImage(file);
-        } catch (err) {
-          console.warn("Could not stamp image, uploading original:", err);
+      if (files.length === 0) {
+        // No photo at all — this is a text-only blessing.
+        await addDoc(collection(db, "posts"), {
+          type: "blessing",
+          authorName: profile.name || "Guest",
+          imageUrl: "",
+          caption: trimmedCaption,
+          createdAt: serverTimestamp(),
+          uid: user.uid,
+          commentCount: 0,
+          likeCount: 0,
+        });
+      } else {
+        // One or more photos — each becomes its own Moment post so the
+        // feed stays a simple one-photo-per-card scroll. The blessing
+        // text, if any, rides along with just the first photo so it
+        // isn't repeated across every card.
+        for (let i = 0; i < files.length; i++) {
+          const { file } = files[i];
+          let uploadBlob = file;
+          try {
+            uploadBlob = await stampImage(file);
+          } catch (err) {
+            console.warn("Could not stamp image, uploading original:", err);
+          }
+
+          const path = `posts/${user.uid}-${Date.now()}-${i}-${file.name}`;
+          const storageRef = ref(storage, path);
+          await uploadBytes(storageRef, uploadBlob);
+          const imageUrl = await getDownloadURL(storageRef);
+
+          await addDoc(collection(db, "posts"), {
+            type: "moment",
+            authorName: profile.name || "Guest",
+            imageUrl,
+            caption: i === 0 ? trimmedCaption : "",
+            createdAt: serverTimestamp(),
+            uid: user.uid,
+            commentCount: 0,
+            likeCount: 0,
+          });
         }
-
-        const path = `posts/${user.uid}-${Date.now()}-${file.name}`;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, uploadBlob);
-        imageUrl = await getDownloadURL(storageRef);
       }
-
-      await addDoc(collection(db, "posts"), {
-        authorName: profile.name || "Guest",
-        authorAvatarUrl: profile.avatarUrl || "",
-        imageUrl,
-        caption: caption.trim(),
-        createdAt: serverTimestamp(),
-        uid: user.uid,
-        commentCount: 0,
-        likeCount: 0,
-      });
 
       onPosted();
     } catch (err) {
@@ -149,47 +170,63 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
   return (
     <div className="pw-modal-backdrop">
       <div className="pw-modal">
-        <h2>Share with the wall</h2>
-        <p className="pw-modal-sub">Post a photo, a message, or both.</p>
+        <h2>Share a moment.</h2>
+        <p className="pw-modal-sub">Add a photo, a blessing, or both.</p>
 
         <form onSubmit={handleSubmit}>
-          <div className="pw-field">
-            <label>Photo (optional)</label>
-            <input type="file" accept="image/*" onChange={handleFile} />
-          </div>
+          <label className="pw-upload-box">
+            <div className="pw-upload-box-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <circle cx="8.5" cy="9.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+            </div>
+            <div className="pw-upload-box-text">Tap to add photos</div>
+            <div className="pw-upload-box-sub">You can select more than one</div>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFiles}
+            />
+          </label>
 
-          {preview && (
-            <div className="pw-preview-wrap">
-              <img src={preview} alt="Preview" className="pw-preview" />
-              <button
-                type="button"
-                className="pw-preview-remove"
-                onClick={clearFile}
-                aria-label="Remove photo"
-              >
-                &times;
-              </button>
+          {files.length > 0 && (
+            <div className="pw-preview-grid">
+              {files.map((f, i) => (
+                <div className="pw-preview-thumb" key={i}>
+                  <img src={f.preview} alt="" />
+                  <button
+                    type="button"
+                    className="pw-preview-remove"
+                    onClick={() => removeFile(i)}
+                    aria-label="Remove photo"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
           <div className="pw-field">
-            <label>{file ? "Caption (optional)" : "Say something"}</label>
-            <input
-              type="text"
+            <label>Message</label>
+            <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Say something about this moment..."
+              placeholder="Write something for Ruby and Israel"
             />
           </div>
 
           {error && <p className="pw-error">{error}</p>}
 
           <div className="pw-modal-actions">
+            <button type="submit" className="btn-primary" disabled={posting}>
+              {posting ? "Sharing..." : "Share."}
+            </button>
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
-            </button>
-            <button type="submit" className="btn-primary" disabled={posting}>
-              {posting ? "Posting..." : "Post"}
             </button>
           </div>
         </form>

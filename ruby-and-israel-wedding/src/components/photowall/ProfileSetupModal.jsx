@@ -1,226 +1,124 @@
 import React, { useState } from "react";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db, registerGuest, loginGuest } from "../../firebase";
-import {
-  setCachedProfile,
-  getLastGuestName,
-  setLastGuestName,
-} from "../../lib/guestProfile";
-
-function friendlyError(mode, err) {
-  const code = err?.code || "";
-  if (mode === "register") {
-    if (code === "auth/email-already-in-use") {
-      return "That name is already registered — try logging in instead, or use a slightly different name.";
-    }
-    if (code === "auth/weak-password") {
-      return "Password should be at least 6 characters.";
-    }
-  } else {
-    if (
-      code === "auth/invalid-credential" ||
-      code === "auth/wrong-password" ||
-      code === "auth/user-not-found"
-    ) {
-      return "That name and password don't match. Double-check them, or register as a new guest.";
-    }
-  }
-  return "Something went wrong. Please try again.";
-}
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { Camera } from "lucide-react";
+import { db, ensureSignedIn } from "../../firebase";
+import { setCachedProfile } from "../../lib/guestProfile";
 
 export default function ProfileSetupModal({ onDone }) {
-  const [mode, setMode] = useState("register"); // "register" | "login"
-  const [name, setName] = useState(getLastGuestName());
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [returning, setReturning] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  // Tries the wide crop first (best fit for this short, full-width strip),
+  // then falls back through the other sizes of the same photo, and finally
+  // to the placeholder if none of them exist at these paths.
+  const heroCandidates = [
+    "/images/Gallery_12_wide.jpg",
+    "/images/Gallery_12_couple.jpg",
+    "/images/Gallery_12.jpeg",
+  ];
+  const [heroIndex, setHeroIndex] = useState(0);
+  const heroFailed = heroIndex >= heroCandidates.length;
 
-  function switchMode(next) {
-    setMode(next);
-    setError("");
-    setPassword("");
-    setConfirmPassword("");
-  }
-
-  async function handleRegister(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("Please enter your name.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password should be at least 6 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords don't match.");
+    if (!name.trim() || !phone.trim()) {
+      setError("Please enter your name and phone number.");
       return;
     }
     setSaving(true);
     setError("");
     try {
-      const user = await registerGuest(name.trim(), password);
+      const user = await ensureSignedIn();
+      const profile = { name: name.trim(), phone: phone.trim() };
 
-      let avatarUrl = "";
-      if (avatarFile) {
-        const path = `avatars/${user.uid}-${Date.now()}-${avatarFile.name}`;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, avatarFile);
-        avatarUrl = await getDownloadURL(storageRef);
-      }
-
-      const profile = { name: name.trim(), avatarUrl };
-      await setDoc(doc(db, "guestProfiles", user.uid), {
-        ...profile,
-        createdAt: serverTimestamp(),
-      });
+      await setDoc(
+        doc(db, "guestProfiles", user.uid),
+        { ...profile, createdAt: serverTimestamp() },
+        { merge: true }
+      );
 
       setCachedProfile(profile);
-      setLastGuestName(profile.name);
       onDone(profile);
     } catch (err) {
       console.error(err);
-      setError(friendlyError("register", err));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    if (!name.trim() || !password) {
-      setError("Please enter your name and password.");
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      const user = await loginGuest(name.trim(), password);
-      const snap = await getDoc(doc(db, "guestProfiles", user.uid));
-      const profile = snap.exists()
-        ? { name: snap.data().name || name.trim(), avatarUrl: snap.data().avatarUrl || "" }
-        : { name: name.trim(), avatarUrl: "" };
-
-      setCachedProfile(profile);
-      setLastGuestName(profile.name);
-      onDone(profile);
-    } catch (err) {
-      console.error(err);
-      setError(friendlyError("login", err));
+      setError("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="pw-modal-backdrop">
-      <div className="pw-modal">
-        <h2>Welcome to the Photo Wall</h2>
+    <div className="pw-welcome-page">
+      <div className="pw-welcome-hero">
+        {!heroFailed && (
+          <img
+            src={heroCandidates[heroIndex]}
+            alt="Ruby and Israel"
+            onError={() => setHeroIndex((i) => i + 1)}
+          />
+        )}
+        {heroFailed && (
+          <div className="pw-welcome-hero-placeholder">
+            <Camera size={34} />
+            <span>Photo of Ruby and Israel</span>
+          </div>
+        )}
+      </div>
+
+      <div className="pw-welcome-card">
+        <div className="pw-modal-monogram">I&nbsp;|&nbsp;R</div>
+        <h2>Karibu to Ruby &amp; Israel's wedding.</h2>
         <p className="pw-modal-sub">
-          Register once, then log back in anytime — on any phone — to post
-          and manage your photos.
+          Share your photos and blessings with the couple.
         </p>
 
-        <div className="pw-auth-tabs">
-          <button
-            type="button"
-            className={`pw-auth-tab ${mode === "register" ? "active" : ""}`}
-            onClick={() => switchMode("register")}
-          >
-            New guest
-          </button>
-          <button
-            type="button"
-            className={`pw-auth-tab ${mode === "login" ? "active" : ""}`}
-            onClick={() => switchMode("login")}
-          >
-            Log in
-          </button>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="pw-field">
+            <label>Your full name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Faith Wanjiru"
+            />
+          </div>
 
-        {mode === "register" ? (
-          <form onSubmit={handleRegister}>
-            <div className="pw-field">
-              <label>Your name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Faith Wanjiru"
-              />
-            </div>
+          <div className="pw-field">
+            <label>Your phone number</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="07XX XXX XXX"
+            />
+          </div>
 
-            <div className="pw-field">
-              <label>Choose a password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
-              />
-            </div>
+          {error && <p className="pw-error">{error}</p>}
 
-            <div className="pw-field">
-              <label>Confirm password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Type it again"
-              />
-            </div>
+          <div className="pw-modal-actions">
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "Joining..." : "Join the celebration"}
+            </button>
+          </div>
+        </form>
 
-            <div className="pw-field">
-              <label>Profile photo (optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            {error && <p className="pw-error">{error}</p>}
-
-            <div className="pw-modal-actions">
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? "Creating account..." : "Create account"}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleLogin}>
-            <div className="pw-field">
-              <label>Your name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Faith Wanjiru"
-              />
-            </div>
-
-            <div className="pw-field">
-              <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
-              />
-            </div>
-
-            {error && <p className="pw-error">{error}</p>}
-
-            <div className="pw-modal-actions">
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? "Logging in..." : "Log in"}
-              </button>
-            </div>
-          </form>
+        <button
+          type="button"
+          className="pw-welcome-link"
+          onClick={() => setReturning((v) => !v)}
+        >
+          I've been here before
+        </button>
+        {returning && (
+          <p className="pw-modal-sub" style={{ marginTop: 10 }}>
+            No problem — just enter your name and phone number again above
+            and tap the button to continue.
+          </p>
         )}
+
+        <p className="pw-welcome-footer">Friday, 4 December 2026 &middot; CITAM Karen</p>
       </div>
     </div>
   );
