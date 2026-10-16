@@ -1,5 +1,5 @@
-import React from "react";
-import { MapPin, Navigation, Phone, MessageCircle } from "lucide-react";
+import React, { useState } from "react";
+import { MapPin, Navigation, Copy, Check } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
 
 const VENUE_NAME = "CITAM Karen";
@@ -8,15 +8,30 @@ const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeU
   VENUE_ADDRESS
 )}`;
 
-// Update names and numbers once confirmed.
-const CONTACTS = [
-  { name: "Israel", phone: "+254 748167830" },
-  { name: "Ruby", phone: "+254 714223019" },
-];
+const PAYBILL_NUMBER = "4816627";
 
-function toWhatsAppLink(phone) {
-  const digits = phone.replace(/[^\d]/g, "");
-  return `https://wa.me/${digits}`;
+function CopyChip({ label, value }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard can be unavailable — fail quietly.
+    }
+  }
+
+  return (
+    <button type="button" className="tg-copy-chip" onClick={handleCopy}>
+      <span className="tg-copy-chip-label">{label}</span>
+      <span className="tg-copy-chip-value">{value}</span>
+      <span className="tg-copy-chip-icon">
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </span>
+    </button>
+  );
 }
 
 export default function TravelGift() {
@@ -53,29 +68,14 @@ export default function TravelGift() {
           <p className="eyebrow">Gift</p>
           <h2>Your presence is the greatest gift</h2>
           <p className="tg-gift-sub">
-            Should you wish to bless us further, we prefer enveloped gifts.
-            For any inquiries, kindly reach out below.
+            Should you wish to bless us with a gift, we would gratefully
+            prefer cash gifts via M-Pesa.
           </p>
-          <div className="tg-gift-contacts">
-            {CONTACTS.map((c) => (
-              <div className="tg-contact" key={c.name}>
-                <span className="tg-contact-name">{c.name}</span>
-                <span className="tg-contact-phone">{c.phone}</span>
-                <div className="tg-contact-actions">
-                  <a className="btn-light" href={`tel:${c.phone.replace(/\s/g, "")}`}>
-                    <Phone size={14} /> Call
-                  </a>
-                  <a
-                    className="btn-light"
-                    href={toWhatsAppLink(c.phone)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <MessageCircle size={14} /> WhatsApp
-                  </a>
-                </div>
-              </div>
-            ))}
+          <div className="tg-gift-paybill">
+            <CopyChip label="Paybill" value={PAYBILL_NUMBER} />
+            <p className="tg-gift-account-note">
+              Account Number: your name
+            </p>
           </div>
         </Reveal>
       </div>
