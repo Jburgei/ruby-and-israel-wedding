@@ -1,7 +1,13 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyArqnpqXuHFaSv7aeVfuFPt7xmPaOSz980",
@@ -17,14 +23,34 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
-export function ensureSignedIn() {
-  return new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        resolve(user);
-      } else {
-        signInAnonymously(auth).then((cred) => resolve(cred.user)).catch(reject);
-      }
-    });
-  });
+// Guests register/log in with a name + password instead of an e-mail.
+// Firebase Auth needs an e-mail-shaped identifier under the hood, so we
+// build one from a normalized version of the name under a fixed, fake
+// domain — guests never see or type this, it's just plumbing.
+function nameToEmail(name) {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+  return `${slug || "guest"}@guest.burkachi.com`;
+}
+
+export async function registerGuest(name, password) {
+  const cred = await createUserWithEmailAndPassword(auth, nameToEmail(name), password);
+  return cred.user;
+}
+
+export async function loginGuest(name, password) {
+  const cred = await signInWithEmailAndPassword(auth, nameToEmail(name), password);
+  return cred.user;
+}
+
+export function logoutGuest() {
+  return signOut(auth);
+}
+
+// Subscribes to auth state; callback receives the Firebase user or null.
+export function onAuthChange(callback) {
+  return onAuthStateChanged(auth, callback);
 }

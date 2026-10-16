@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db, ensureSignedIn } from "../../firebase";
-import { getGuestProfile } from "../../lib/guestProfile";
+import { storage, db, auth } from "../../firebase";
 
 const STAMP_TEXT = "Ruby & Israel · 12.04.26";
+const MAX_DIMENSION = 1600;
 
 // Draws the uploaded photo onto a canvas and stamps the wedding name/date
 // into the corner, so every photo posted to the wall carries it automatically.
 // Also downsizes the image first — phone photos can be 8-12MB at full
-// resolution, which is what was making uploads feel slow. Capping the
-// longest side at 1600px keeps it sharp on screen but a fraction of the size.
-const MAX_DIMENSION = 1600;
-
+// resolution. Capping the longest side at 1600px keeps it sharp on screen
+// but a fraction of the size, which is what makes uploads fast.
 function stampImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -83,7 +81,7 @@ function stampImage(file) {
   });
 }
 
-export default function NewPostModal({ onClose, onPosted }) {
+export default function NewPostModal({ profile, onClose, onPosted }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [caption, setCaption] = useState("");
@@ -97,33 +95,40 @@ export default function NewPostModal({ onClose, onPosted }) {
     setPreview(URL.createObjectURL(f));
   }
 
+  function clearFile() {
+    setFile(null);
+    setPreview("");
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!file) {
-      setError("Please choose a photo to upload.");
+    if (!file && !caption.trim()) {
+      setError("Add a photo, write something, or both.");
       return;
     }
     setPosting(true);
     setError("");
     try {
-      const user = await ensureSignedIn();
-      const profile = getGuestProfile() || {};
+      const user = auth.currentUser;
 
-      let uploadBlob = file;
-      try {
-        uploadBlob = await stampImage(file);
-      } catch (err) {
-        console.warn("Could not stamp image, uploading original:", err);
+      let imageUrl = "";
+      if (file) {
+        let uploadBlob = file;
+        try {
+          uploadBlob = await stampImage(file);
+        } catch (err) {
+          console.warn("Could not stamp image, uploading original:", err);
+        }
+
+        const path = `posts/${user.uid}-${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, uploadBlob);
+        imageUrl = await getDownloadURL(storageRef);
       }
 
-      const path = `posts/${user.uid}-${Date.now()}-${file.name}`;
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, uploadBlob);
-      const imageUrl = await getDownloadURL(storageRef);
-
       await addDoc(collection(db, "posts"), {
-        authorName: profile.anonymous ? "Anonymous" : profile.name || "Guest",
-        authorAvatarUrl: profile.anonymous ? "" : profile.avatarUrl || "",
+        authorName: profile.name || "Guest",
+        authorAvatarUrl: profile.avatarUrl || "",
         imageUrl,
         caption: caption.trim(),
         createdAt: serverTimestamp(),
@@ -135,7 +140,7 @@ export default function NewPostModal({ onClose, onPosted }) {
       onPosted();
     } catch (err) {
       console.error(err);
-      setError("Something went wrong posting your photo. Please try again.");
+      setError("Something went wrong posting. Please try again.");
     } finally {
       setPosting(false);
     }
@@ -144,20 +149,31 @@ export default function NewPostModal({ onClose, onPosted }) {
   return (
     <div className="pw-modal-backdrop">
       <div className="pw-modal">
-        <h2>Share a photo</h2>
+        <h2>Share with the wall</h2>
+        <p className="pw-modal-sub">Post a photo, a message, or both.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="pw-field">
-            <label>Choose a photo</label>
+            <label>Photo (optional)</label>
             <input type="file" accept="image/*" onChange={handleFile} />
           </div>
 
           {preview && (
-            <img src={preview} alt="Preview" className="pw-preview" />
+            <div className="pw-preview-wrap">
+              <img src={preview} alt="Preview" className="pw-preview" />
+              <button
+                type="button"
+                className="pw-preview-remove"
+                onClick={clearFile}
+                aria-label="Remove photo"
+              >
+                &times;
+              </button>
+            </div>
           )}
 
           <div className="pw-field">
-            <label>Caption (optional)</label>
+            <label>{file ? "Caption (optional)" : "Say something"}</label>
             <input
               type="text"
               value={caption}

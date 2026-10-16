@@ -14,12 +14,11 @@ import {
 } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { Heart, MessageCircle, Trash2, Maximize2 } from "lucide-react";
-import { db, storage, ensureSignedIn } from "../../firebase";
-import { getGuestProfile } from "../../lib/guestProfile";
+import { db, storage, auth } from "../../firebase";
 
 function formatLikesLabel(likes) {
   if (likes.length === 0) return null;
-  const named = likes.filter((l) => !l.anonymous && l.name);
+  const named = likes.filter((l) => l.name);
   if (named.length === 0) {
     return `${likes.length} like${likes.length === 1 ? "" : "s"}`;
   }
@@ -29,9 +28,8 @@ function formatLikesLabel(likes) {
   return `Liked by ${first} and ${remaining} other${remaining === 1 ? "" : "s"}`;
 }
 
-
-export default function PostCard({ post, onExpand }) {
-  const [uid, setUid] = useState(null);
+export default function PostCard({ post, myProfile, onExpand }) {
+  const uid = auth.currentUser?.uid || null;
   const [likes, setLikes] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
@@ -39,10 +37,6 @@ export default function PostCard({ post, onExpand }) {
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [burst, setBurst] = useState(false);
-
-  useEffect(() => {
-    ensureSignedIn().then((user) => setUid(user.uid));
-  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "posts", post.id, "likes"), (snap) => {
@@ -53,9 +47,11 @@ export default function PostCard({ post, onExpand }) {
 
   const liked = uid ? likes.some((l) => l.id === uid) : false;
   const isOwner = uid && post.uid === uid;
+  const hasImage = !!post.imageUrl;
 
   async function toggleLike() {
-    const user = uid ? { uid } : await ensureSignedIn();
+    const user = auth.currentUser;
+    if (!user) return;
     const likeRef = doc(db, "posts", post.id, "likes", user.uid);
     const postRef = doc(db, "posts", post.id);
 
@@ -63,10 +59,8 @@ export default function PostCard({ post, onExpand }) {
       await deleteDoc(likeRef);
       await updateDoc(postRef, { likeCount: increment(-1) });
     } else {
-      const profile = getGuestProfile() || {};
       await setDoc(likeRef, {
-        name: profile.anonymous ? "" : profile.name || "Guest",
-        anonymous: !!profile.anonymous,
+        name: myProfile?.name || "Guest",
         createdAt: serverTimestamp(),
       });
       await updateDoc(postRef, { likeCount: increment(1) });
@@ -74,6 +68,7 @@ export default function PostCard({ post, onExpand }) {
   }
 
   function handleDoubleTap() {
+    if (!hasImage) return;
     setBurst(true);
     window.setTimeout(() => setBurst(false), 700);
     if (!liked) {
@@ -101,11 +96,10 @@ export default function PostCard({ post, onExpand }) {
     if (!commentText.trim()) return;
     setSending(true);
     try {
-      const user = await ensureSignedIn();
-      const profile = getGuestProfile() || {};
+      const user = auth.currentUser;
 
       await addDoc(collection(db, "posts", post.id, "comments"), {
-        authorName: profile.anonymous ? "Anonymous" : profile.name || "Guest",
+        authorName: myProfile?.name || "Guest",
         text: commentText.trim(),
         createdAt: serverTimestamp(),
         uid: user.uid,
@@ -124,13 +118,15 @@ export default function PostCard({ post, onExpand }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm("Delete this photo? This can't be undone.")) return;
+    if (!window.confirm("Delete this post? This can't be undone.")) return;
     setDeleting(true);
     try {
-      try {
-        await deleteObject(ref(storage, post.imageUrl));
-      } catch (err) {
-        console.warn("Could not delete image from storage:", err);
+      if (post.imageUrl) {
+        try {
+          await deleteObject(ref(storage, post.imageUrl));
+        } catch (err) {
+          console.warn("Could not delete image from storage:", err);
+        }
       }
       await deleteDoc(doc(db, "posts", post.id));
     } catch (err) {
@@ -170,28 +166,34 @@ export default function PostCard({ post, onExpand }) {
           )}
         </div>
 
-        <div className="pw-image-wrap" onDoubleClick={handleDoubleTap}>
-          <img src={post.imageUrl} alt="" className="pw-post-image" />
-          {burst && (
-            <Heart
-              className="pw-heart-burst"
-              size={90}
-              fill="#5e1b30"
-              color="#5e1b30"
-            />
-          )}
-          <button
-            type="button"
-            className="pw-expand-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onExpand();
-            }}
-            aria-label="View fullscreen"
-          >
-            <Maximize2 size={15} />
-          </button>
-        </div>
+        {hasImage && (
+          <div className="pw-image-wrap" onDoubleClick={handleDoubleTap}>
+            <img src={post.imageUrl} alt="" className="pw-post-image" />
+            {burst && (
+              <Heart
+                className="pw-heart-burst"
+                size={90}
+                fill="#5e1b30"
+                color="#5e1b30"
+              />
+            )}
+            <button
+              type="button"
+              className="pw-expand-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExpand();
+              }}
+              aria-label="View fullscreen"
+            >
+              <Maximize2 size={15} />
+            </button>
+          </div>
+        )}
+
+        {!hasImage && post.caption && (
+          <p className="pw-text-post">{post.caption}</p>
+        )}
 
         <div className="pw-actions">
           <button
@@ -214,7 +216,7 @@ export default function PostCard({ post, onExpand }) {
 
         {likesLabel && <p className="pw-likes">{likesLabel}</p>}
 
-        {post.caption && (
+        {hasImage && post.caption && (
           <p className="pw-post-caption">
             <strong>{post.authorName || "Guest"}</strong> {post.caption}
           </p>

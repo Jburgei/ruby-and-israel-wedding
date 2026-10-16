@@ -1,64 +1,49 @@
-const KEY = "wed_guest_profile";
-const RECENT_KEY = "wed_guest_recent_profiles";
-const MAX_RECENT = 6;
+// Real identity now lives in Firebase Auth + the guestProfiles Firestore
+// collection (see firebase.js: registerGuest/loginGuest). This file just
+// keeps small local conveniences: a cached copy of the active profile so
+// the UI can render instantly instead of waiting on a Firestore round
+// trip, and the last name typed so the login form can prefill it.
 
-export function getGuestProfile() {
+const CACHE_KEY = "wed_guest_profile_cache";
+const LAST_NAME_KEY = "wed_guest_last_name";
+
+export function getCachedProfile() {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(CACHE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-// Named guests who've set up a profile on this device, most recent first.
-// Lets "Switch guest" be reversible — tap a name instead of retyping it.
-export function getRecentProfiles() {
+export function setCachedProfile(profile) {
   try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
+    localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
   } catch {
-    return [];
+    // ignore
   }
 }
 
-function saveRecentProfiles(list) {
+export function clearCachedProfile() {
   try {
-    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+    localStorage.removeItem(CACHE_KEY);
   } catch {
-    // storage full or unavailable — not critical, skip silently
+    // ignore
   }
 }
 
-export function saveGuestProfile(profile) {
-  localStorage.setItem(KEY, JSON.stringify(profile));
-
-  // Anonymous posting has no name to remember by, so only named profiles
-  // get added to the "continue as" list.
-  if (!profile.anonymous && profile.name) {
-    const recent = getRecentProfiles().filter(
-      (p) => p.name.toLowerCase() !== profile.name.toLowerCase()
-    );
-    recent.unshift({
-      name: profile.name,
-      avatarUrl: profile.avatarUrl || "",
-      lastUsed: Date.now(),
-    });
-    saveRecentProfiles(recent.slice(0, MAX_RECENT));
+export function getLastGuestName() {
+  try {
+    return localStorage.getItem(LAST_NAME_KEY) || "";
+  } catch {
+    return "";
   }
 }
 
-// Clears the ACTIVE profile only. The device keeps the same underlying
-// Firebase identity throughout (ensureSignedIn persists it), and the
-// person's name/photo stays in the "recent" list so they can come back.
-export function clearGuestProfile() {
-  localStorage.removeItem(KEY);
-}
-
-export function forgetRecentProfile(name) {
-  const recent = getRecentProfiles().filter(
-    (p) => p.name.toLowerCase() !== name.toLowerCase()
-  );
-  saveRecentProfiles(recent);
+export function setLastGuestName(name) {
+  try {
+    localStorage.setItem(LAST_NAME_KEY, name);
+  } catch {
+    // ignore
+  }
 }

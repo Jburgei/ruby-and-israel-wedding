@@ -6,11 +6,16 @@ import {
   onSnapshot,
   doc,
   setDoc,
+  getDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { Home, Heart, User } from "lucide-react";
-import { db, ensureSignedIn } from "../firebase";
-import { getGuestProfile, clearGuestProfile } from "../lib/guestProfile";
+import { db, onAuthChange, logoutGuest } from "../firebase";
+import {
+  getCachedProfile,
+  setCachedProfile,
+  clearCachedProfile,
+} from "../lib/guestProfile";
 import ProfileSetupModal from "../components/photowall/ProfileSetupModal.jsx";
 import NewPostModal from "../components/photowall/NewPostModal.jsx";
 import PostCard from "../components/photowall/PostCard.jsx";
@@ -20,10 +25,11 @@ import StoryViewer from "../components/photowall/StoryViewer.jsx";
 const ACCENTS = ["#f2c14e", "#ff8f66", "#ff9fc0", "#6fb8e8"];
 
 export default function PhotoWall() {
-  const [hasProfile, setHasProfile] = useState(!!getGuestProfile());
+  const [authReady, setAuthReady] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
+  const [profile, setProfile] = useState(() => getCachedProfile());
   const [posts, setPosts] = useState([]);
   const [guests, setGuests] = useState([]);
-  const [myUid, setMyUid] = useState(null);
   const [showNewPost, setShowNewPost] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [sortMode, setSortMode] = useState("recent"); // "recent" | "loved"
@@ -31,7 +37,42 @@ export default function PhotoWall() {
   const [showMenu, setShowMenu] = useState(false);
   const [storyGuest, setStoryGuest] = useState(null);
 
-  const profile = getGuestProfile() || {};
+  useEffect(() => {
+    // Only the very first auth check after the page loads should ever sign
+    // someone back out for having no profile doc yet — that's the signal
+    // for a leftover pre-account session (e.g. an old anonymous sign-in).
+    // A fresh register/login that just happened in this same page load
+    // fires its own auth event too, and its profile doc may simply not
+    // have finished writing yet — that one must never trigger a sign-out,
+    // or registering/logging in can never actually complete.
+    let isInitial = true;
+
+    const unsub = onAuthChange((user) => {
+      const isFirstCheck = isInitial;
+      isInitial = false;
+
+      setAuthUser(user);
+      setAuthReady(true);
+      if (user) {
+        getDoc(doc(db, "guestProfiles", user.uid)).then((snap) => {
+          if (snap.exists()) {
+            const p = {
+              name: snap.data().name || "Guest",
+              avatarUrl: snap.data().avatarUrl || "",
+            };
+            setProfile(p);
+            setCachedProfile(p);
+          } else if (isFirstCheck) {
+            logoutGuest();
+          }
+        });
+      } else {
+        setProfile(null);
+        clearCachedProfile();
+      }
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
@@ -49,60 +90,72 @@ export default function PhotoWall() {
   }, []);
 
   useEffect(() => {
-    if (!hasProfile) return;
-    const p = getGuestProfile() || {};
-    ensureSignedIn().then((user) => {
-      setMyUid(user.uid);
-      setDoc(
-        doc(db, "guestVisits", user.uid),
-        {
-          name: p.anonymous ? "" : p.name || "",
-          anonymous: !!p.anonymous,
-          avatarUrl: p.anonymous ? "" : p.avatarUrl || "",
-          lastSeen: serverTimestamp(),
-        },
-        { merge: true }
-      );
-    });
-  }, [hasProfile]);
+    if (!authUser || !profile) return;
+    setDoc(
+      doc(db, "guestVisits", authUser.uid),
+      {
+        name: profile.name || "",
+        avatarUrl: profile.avatarUrl || "",
+        lastSeen: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }, [authUser, profile]);
 
   const guestsWithPosts = useMemo(
-    () => guests.filter((g) => posts.some((p) => p.uid === g.id)),
+    () => guests.filter((g) => posts.some((p) => p.uid === g.id && p.imageUrl)),
     [guests, posts]
   );
 
   const storyPosts = useMemo(() => {
     if (!storyGuest) return [];
-    return posts.filter((p) => p.uid === storyGuest.id).slice().reverse();
+    return posts
+      .filter((p) => p.uid === storyGuest.id && p.imageUrl)
+      .slice()
+      .reverse();
   }, [posts, storyGuest]);
 
   const displayedPosts = useMemo(() => {
     let list = posts;
-    if (onlyMine && myUid) {
-      list = list.filter((p) => p.uid === myUid);
+    if (onlyMine && authUser) {
+      list = list.filter((p) => p.uid === authUser.uid);
     }
     if (sortMode === "loved") {
       list = [...list].sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
     }
     return list;
-  }, [posts, sortMode, onlyMine, myUid]);
+  }, [posts, sortMode, onlyMine, authUser]);
+
+  // The lightbox only makes sense for photos — text-only posts are left out
+  // so prev/next never lands on one with nothing to show.
+  const photoPosts = useMemo(
+    () => displayedPosts.filter((p) => p.imageUrl),
+    [displayedPosts]
+  );
 
   function handleLogout() {
-    clearGuestProfile();
-    setHasProfile(false);
+    logoutGuest();
   }
 
   function handleGuestClick(guest) {
-    const hasPosts = posts.some((p) => p.uid === guest.id);
-    if (!hasPosts) return;
+    const hasPhotoPosts = posts.some((p) => p.uid === guest.id && p.imageUrl);
+    if (!hasPhotoPosts) return;
     setStoryGuest(guest);
   }
 
-  if (!hasProfile) {
-    return <ProfileSetupModal onDone={() => setHasProfile(true)} />;
+  if (!authReady) {
+    return <div className="pw-page" />;
   }
 
-  const myInitial = (profile.anonymous ? "A" : (profile.name || "G").charAt(0)).toUpperCase();
+  if (!authUser) {
+    return <ProfileSetupModal onDone={(p) => setProfile(p)} />;
+  }
+
+  if (!profile) {
+    return <div className="pw-page" />;
+  }
+
+  const myInitial = (profile.name || "G").charAt(0).toUpperCase();
 
   return (
     <div className="pw-page">
@@ -114,11 +167,7 @@ export default function PhotoWall() {
             onClick={() => setShowMenu((v) => !v)}
             aria-label="Account menu"
           >
-            {!profile.anonymous && profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="" />
-            ) : (
-              myInitial
-            )}
+            {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : myInitial}
           </button>
           {showMenu && (
             <>
@@ -141,7 +190,7 @@ export default function PhotoWall() {
                     handleLogout();
                   }}
                 >
-                  Switch guest
+                  Log out
                 </button>
               </div>
             </>
@@ -154,13 +203,9 @@ export default function PhotoWall() {
       {onlyMine ? (
         <div className="pw-profile-header">
           <span className="pw-profile-avatar">
-            {!profile.anonymous && profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="" />
-            ) : (
-              myInitial
-            )}
+            {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" /> : myInitial}
           </span>
-          <h2>{profile.anonymous ? "Anonymous Guest" : profile.name || "Guest"}</h2>
+          <h2>{profile.name || "Guest"}</h2>
           <p>
             {displayedPosts.length} photo{displayedPosts.length === 1 ? "" : "s"}
           </p>
@@ -169,7 +214,7 @@ export default function PhotoWall() {
               Back to wall
             </button>
             <button type="button" className="pw-back-link pw-back-link-solid" onClick={handleLogout}>
-              Switch guest
+              Log out
             </button>
           </div>
         </div>
@@ -187,16 +232,14 @@ export default function PhotoWall() {
                 >
                   <span className="pw-story-ring">
                     <span className="pw-story-avatar">
-                      {!g.anonymous && g.avatarUrl ? (
+                      {g.avatarUrl ? (
                         <img src={g.avatarUrl} alt="" />
                       ) : (
-                        (g.anonymous ? "A" : (g.name || "G").charAt(0)).toUpperCase()
+                        (g.name || "G").charAt(0).toUpperCase()
                       )}
                     </span>
                   </span>
-                  <span className="pw-story-name">
-                    {g.anonymous ? "Anon" : (g.name || "Guest").split(" ")[0]}
-                  </span>
+                  <span className="pw-story-name">{(g.name || "Guest").split(" ")[0]}</span>
                 </button>
               ))}
             </div>
@@ -211,7 +254,7 @@ export default function PhotoWall() {
               <span />
             </div>
             <p className="pw-stats">
-              {posts.length} photo{posts.length === 1 ? "" : "s"} &middot; {guests.length}{" "}
+              {posts.length} post{posts.length === 1 ? "" : "s"} &middot; {guests.length}{" "}
               guest{guests.length === 1 ? "" : "s"}
             </p>
           </div>
@@ -222,15 +265,18 @@ export default function PhotoWall() {
         {displayedPosts.length === 0 && (
           <p className="pw-empty">
             {onlyMine
-              ? "You haven't shared a photo yet — tap + to post one."
-              : "The wall is quiet for now — be the first to share a photo from today."}
+              ? "You haven't shared anything yet — tap + to post a photo or a message."
+              : "The wall is quiet for now — be the first to share a photo or a message."}
           </p>
         )}
-        {displayedPosts.map((post, i) => (
+        {displayedPosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
-            onExpand={() => setLightboxIndex(i)}
+            myProfile={profile}
+            onExpand={() =>
+              setLightboxIndex(photoPosts.findIndex((p) => p.id === post.id))
+            }
           />
         ))}
       </div>
@@ -239,7 +285,7 @@ export default function PhotoWall() {
         type="button"
         className="pw-fab"
         onClick={() => setShowNewPost(true)}
-        aria-label="Add a photo"
+        aria-label="Add a photo or message"
       >
         +
       </button>
@@ -279,6 +325,7 @@ export default function PhotoWall() {
 
       {showNewPost && (
         <NewPostModal
+          profile={profile}
           onClose={() => setShowNewPost(false)}
           onPosted={() => setShowNewPost(false)}
         />
@@ -286,7 +333,7 @@ export default function PhotoWall() {
 
       {lightboxIndex !== null && (
         <Lightbox
-          posts={displayedPosts}
+          posts={photoPosts}
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onChangeIndex={setLightboxIndex}
@@ -296,8 +343,8 @@ export default function PhotoWall() {
       {storyGuest && storyPosts.length > 0 && (
         <StoryViewer
           posts={storyPosts}
-          guestName={storyGuest.anonymous ? "Anonymous" : storyGuest.name || "Guest"}
-          guestAvatarUrl={!storyGuest.anonymous ? storyGuest.avatarUrl : ""}
+          guestName={storyGuest.name || "Guest"}
+          guestAvatarUrl={storyGuest.avatarUrl || ""}
           onClose={() => setStoryGuest(null)}
         />
       )}
