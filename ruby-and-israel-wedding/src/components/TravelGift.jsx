@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { MapPin, Navigation, Copy, Check } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { MapPin, Navigation, Copy, Check, Gift, X } from "lucide-react";
 import Reveal from "./shared/Reveal.jsx";
+import GiftRegistry from "./GiftRegistry.jsx";
 
 const VENUE_NAME = "CITAM Karen";
 const VENUE_ADDRESS = "CITAM Karen, Langata Road, Nairobi, Kenya";
@@ -35,6 +37,17 @@ function CopyChip({ label, value }) {
 }
 
 export default function TravelGift() {
+  const [showRegistry, setShowRegistry] = useState(false);
+
+  useEffect(() => {
+    if (!showRegistry) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showRegistry]);
+
   return (
     <section className="travel-gift">
       <video
@@ -77,8 +90,37 @@ export default function TravelGift() {
               Account Number: your name
             </p>
           </div>
+
+          <button
+            type="button"
+            className="tg-registry-link"
+            onClick={() => setShowRegistry(true)}
+          >
+            <Gift size={14} /> View our gift registry
+          </button>
         </Reveal>
       </div>
+
+      {showRegistry &&
+        createPortal(
+          <div
+            className="tg-registry-backdrop"
+            onClick={() => setShowRegistry(false)}
+          >
+            <div className="tg-registry-panel" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="tg-registry-close"
+                onClick={() => setShowRegistry(false)}
+                aria-label="Close registry"
+              >
+                <X size={20} />
+              </button>
+              <GiftRegistry />
+            </div>
+          </div>,
+          document.body
+        )}
     </section>
   );
 }
