@@ -2951,6 +2951,20 @@ body,
   opacity: 0.7;
 }
 
+.gr-item-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.gr-item-price {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1b1b1b;
+}
+
 .gr-item-offer {
   font-size: 0.78rem;
   color: #a97c2f;
@@ -3002,6 +3016,12 @@ body,
 .gr-modal-item-name {
   font-weight: 600;
   margin: 0 0 4px;
+}
+
+.gr-modal-price {
+  font-weight: 700;
+  color: #a97c2f;
+  margin: 0 0 10px;
 }
 
 .gr-modal-sub {

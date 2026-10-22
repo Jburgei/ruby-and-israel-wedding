@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   onSnapshot,
@@ -21,6 +21,11 @@ const STORES = [
   "Home & Beyond — Sarit Centre, Rhapta Square (Westlands)",
 ];
 
+function formatKES(amount) {
+  if (amount == null) return null;
+  return `KES ${Number(amount).toLocaleString("en-KE")}`;
+}
+
 // If the registryItems collection is completely empty, this writes the
 // starting data in once, using deterministic IDs so it's safe even if two
 // guests happen to load an empty registry at the same moment — both
@@ -31,6 +36,25 @@ async function seedIfEmpty() {
   const batch = writeBatch(db);
   GIFT_REGISTRY_SEED.forEach((item) => {
     batch.set(doc(db, "registryItems", item.id), item);
+  });
+  await batch.commit();
+}
+
+// For a registry that was already seeded before prices existed, this fills
+// in the `price` field on any live item that's missing one, using the
+// GIFT_REGISTRY_SEED values as the source of prices. It never touches
+// purchased / purchasedBy / purchasedAt, so items already claimed (like the
+// fridge-freezer) keep their purchase record exactly as-is — they just gain
+// a price.
+async function syncMissingPrices(liveItems) {
+  const priceById = new Map(GIFT_REGISTRY_SEED.map((it) => [it.id, it.price]));
+  const needsPrice = liveItems.filter(
+    (it) => (it.price === undefined || it.price === null) && priceById.get(it.id) != null
+  );
+  if (needsPrice.length === 0) return;
+  const batch = writeBatch(db);
+  needsPrice.forEach((it) => {
+    batch.update(doc(db, "registryItems", it.id), { price: priceById.get(it.id) });
   });
   await batch.commit();
 }
@@ -74,6 +98,9 @@ function MarkPurchasedModal({ item, onClose, onDone }) {
       <div className="gr-modal" onClick={(e) => e.stopPropagation()}>
         <h3>Mark as purchased</h3>
         <p className="gr-modal-item-name">{item.name}</p>
+        {item.price != null && (
+          <p className="gr-modal-price">{formatKES(item.price)}</p>
+        )}
         <p className="gr-modal-sub">
           This removes it from the list so no one else buys the same thing.
         </p>
@@ -104,7 +131,12 @@ function RegistryItemRow({ item, onMark }) {
       <div className="gr-item-main">
         <span className="gr-item-name">{item.name}</span>
         {item.notes && <span className="gr-item-notes">{item.notes}</span>}
-        {item.offer && <span className="gr-item-offer">{item.offer}</span>}
+        <div className="gr-item-meta">
+          {item.price != null && (
+            <span className="gr-item-price">{formatKES(item.price)}</span>
+          )}
+          {item.offer && <span className="gr-item-offer">{item.offer}</span>}
+        </div>
       </div>
       <button type="button" className="gr-mark-btn" onClick={() => onMark(item)}>
         I'll get this
@@ -163,6 +195,7 @@ export default function GiftRegistry() {
   const [search, setSearch] = useState("");
   const [showPurchased, setShowPurchased] = useState(false);
   const [markingItem, setMarkingItem] = useState(null);
+  const hasSyncedPrices = useRef(false);
 
   useEffect(() => {
     seedIfEmpty().catch((err) => console.error("Could not seed registry:", err));
@@ -170,6 +203,17 @@ export default function GiftRegistry() {
       const list = snap.docs.map((d) => d.data());
       list.sort((a, b) => a.no - b.no);
       setItems(list);
+
+      // One-time catch-up: if this registry was seeded before prices
+      // existed, fill in any missing prices from the current seed file.
+      // Guarded so it only ever runs once per page load, no matter how
+      // many snapshot events come through.
+      if (!hasSyncedPrices.current) {
+        hasSyncedPrices.current = true;
+        syncMissingPrices(list).catch((err) =>
+          console.error("Could not sync registry prices:", err)
+        );
+      }
     });
     return () => unsub();
   }, []);
