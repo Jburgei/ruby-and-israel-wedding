@@ -193,7 +193,6 @@ function CategorySection({ category, items, openByDefault, onMark }) {
 export default function GiftRegistry() {
   const [items, setItems] = useState(null); // null = loading
   const [search, setSearch] = useState("");
-  const [showPurchased, setShowPurchased] = useState(false);
   const [markingItem, setMarkingItem] = useState(null);
   const hasSyncedPrices = useRef(false);
 
@@ -222,7 +221,10 @@ export default function GiftRegistry() {
     if (!items) return [];
     const q = search.trim().toLowerCase();
     return items.filter((it) => {
-      if (!showPurchased && it.purchased) return false;
+      // Purchased items are always left out entirely — there's no way to
+      // reveal them again, so a claimed gift can never look available to
+      // someone else and get bought twice.
+      if (it.purchased) return false;
       if (!q) return true;
       return (
         it.name.toLowerCase().includes(q) ||
@@ -230,7 +232,7 @@ export default function GiftRegistry() {
         it.section.toLowerCase().includes(q)
       );
     });
-  }, [items, search, showPurchased]);
+  }, [items, search]);
 
   const byCategory = useMemo(() => {
     const map = new Map();
@@ -261,6 +263,14 @@ export default function GiftRegistry() {
             </span>
           ))}
         </div>
+        <p className="gr-note">
+          Already tapped "I'll get this" on something here? That's all we
+          need — no need to also buy it separately or let us know again.
+          Items only disappear from this list once someone has claimed them
+          on this page, so if you don't see something you already arranged
+          outside the registry, it may be worth checking in with us directly
+          before buying twice.
+        </p>
       </Reveal>
 
       <div className="gr-controls">
@@ -273,14 +283,6 @@ export default function GiftRegistry() {
             placeholder="Search for an item..."
           />
         </div>
-        <label className="gr-toggle">
-          <input
-            type="checkbox"
-            checked={showPurchased}
-            onChange={(e) => setShowPurchased(e.target.checked)}
-          />
-          Show items already bought
-        </label>
       </div>
 
       {items === null ? (
