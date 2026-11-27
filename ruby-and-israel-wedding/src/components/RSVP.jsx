@@ -5,6 +5,9 @@ import Reveal from "./shared/Reveal.jsx";
 
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwFUX1I2sPAsRqFJfwRfASw-BpRuJHnFFHFGBalrwm3GDX7At9zmCXfWIqvCxn-NPAJwg/exec";
 
+// Flip this to true to re-open the RSVP form.
+const RSVP_OPEN = false;
+
 export default function RSVP() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,9 +32,7 @@ export default function RSVP() {
 
       setSubmitting(true);
 
-      // We can't read the response anyway (no-cors is opaque), so there's no
-      // benefit to blocking the UI on the full round-trip to Apps Script —
-      // fire it off in the background and let the user move on right away.
+      
       fetch(SHEET_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
@@ -44,8 +45,7 @@ export default function RSVP() {
         }),
       }).catch(() => {});
 
-      // Small fixed delay so the tap still feels like it did something,
-      // instead of the button just instantly flashing to "done."
+     
       await new Promise((resolve) => setTimeout(resolve, 450));
 
       setSubmitting(false);
@@ -53,6 +53,31 @@ export default function RSVP() {
     },
     [name, phone, attending, guests]
   );
+
+  if (!RSVP_OPEN) {
+    return (
+      <section className="rsvp" id="rsvp">
+        <Reveal>
+          <p className="eyebrow">Your presence matters</p>
+          <h2>RSVPs are now closed</h2>
+          <p className="sub">
+            Thank you to everyone who has responded. We can&rsquo;t wait to
+            celebrate with you on December 4th.
+          </p>
+          <div className="rsvp-card">
+            <div className="thanks">
+              <Calendar className="ic" size={30} strokeWidth={1.1} />
+              <h3>Thank you</h3>
+              <p>
+                If you haven&rsquo;t RSVP&rsquo;d and would still like to
+                join us, please reach out to the family directly.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
 
   return (
     <section className="rsvp" id="rsvp">
